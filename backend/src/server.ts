@@ -6,6 +6,7 @@ import { initDatabase } from "./db";
 import shopsRouter from "./routes/shops";
 import bookingsRouter from "./routes/bookings";
 import statsRouter from "./routes/stats";
+import authRouter from "./routes/auth";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ const uploadsDir = path.join(__dirname, "..", "uploads");
 app.use("/uploads", express.static(uploadsDir));
 
 // API Routes
+app.use("/api/auth", authRouter);
 app.use("/api/shops", shopsRouter);
 app.use("/api/bookings", bookingsRouter);
 app.use("/api/stats", statsRouter);

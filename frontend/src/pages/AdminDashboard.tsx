@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<any>({
     totalOrders: 0,
     pendingOrders: 0,
@@ -162,6 +164,24 @@ export default function AdminDashboard() {
           <p className="hero-description">
             Platform-wide management for campus administration. Oversee all registered print shops, review global order transactions, and monitor system health.
           </p>
+
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              background: "#18181b",
+              color: "white",
+              padding: "6px 14px",
+              borderRadius: "20px",
+              fontSize: "13px",
+              marginTop: "10px",
+            }}
+          >
+            <span>👑 Authenticated Admin:</span>
+            <strong>{user?.name || "Campus System Admin"}</strong>
+            <span style={{ color: "#a1a1aa" }}>({user?.email || "admin@localpickup.com"})</span>
+          </div>
         </section>
 
         {/* Global Platform KPIs */}

@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import bcrypt from "bcryptjs";
 
 // Ensure data folder exists
 const dataDir = path.join(__dirname, "..", "data");
@@ -81,10 +82,30 @@ export function initDatabase() {
     );
   `);
 
+  // Users table for Admin and Shop Operator authentication
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      passwordHash TEXT NOT NULL,
+      role TEXT NOT NULL, -- 'admin' | 'shop' | 'customer'
+      shopId INTEGER,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (shopId) REFERENCES shops (id)
+    );
+  `);
+
   // Seed default shops and services if empty
   const shopCount = db.prepare("SELECT COUNT(*) as count FROM shops").get() as { count: number };
   if (shopCount.count === 0) {
     seedDatabase();
+  }
+
+  // Seed default users if empty
+  const userCount = db.prepare("SELECT COUNT(*) as count FROM users").get() as { count: number };
+  if (userCount.count === 0) {
+    seedUsers();
   }
 }
 
@@ -311,3 +332,57 @@ function seedDatabase() {
 
   console.log("Database initialized and seeded successfully.");
 }
+
+function seedUsers() {
+  console.log("Seeding default Admin and Shop Operator accounts...");
+
+  const insertUser = db.prepare(`
+    INSERT INTO users (name, email, passwordHash, role, shopId)
+    VALUES (@name, @email, @passwordHash, @role, @shopId)
+  `);
+
+  const adminHash = bcrypt.hashSync("admin123", 10);
+  const shopHash = bcrypt.hashSync("shop123", 10);
+
+  const defaultUsers = [
+    // Platform Super Admin
+    {
+      name: "Campus System Admin",
+      email: "admin@localpickup.com",
+      passwordHash: adminHash,
+      role: "admin",
+      shopId: null,
+    },
+    // ABC Digital Prints Operator
+    {
+      name: "ABC Prints Operator",
+      email: "abc@prints.com",
+      passwordHash: shopHash,
+      role: "shop",
+      shopId: 1,
+    },
+    // Quick Print Center Operator
+    {
+      name: "Quick Print Operator",
+      email: "quick@print.com",
+      passwordHash: shopHash,
+      role: "shop",
+      shopId: 2,
+    },
+    // City Copy & Stationery Operator
+    {
+      name: "City Copy Operator",
+      email: "city@copy.com",
+      passwordHash: shopHash,
+      role: "shop",
+      shopId: 3,
+    },
+  ];
+
+  for (const u of defaultUsers) {
+    insertUser.run(u);
+  }
+
+  console.log("Default admin and shop accounts seeded successfully.");
+}
+

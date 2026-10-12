@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 
 export default function ShopDashboard() {
+  const { user, isAdmin } = useAuth();
   const [shops, setShops] = useState<any[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<number>(() => {
+    if (user?.shopId) return user.shopId;
     const saved = localStorage.getItem("operator_shop_id");
     return saved ? Number(saved) : 1;
   });
@@ -208,30 +211,47 @@ export default function ShopDashboard() {
               ← Storefront View
             </Link>
 
-            {/* Shop Switcher */}
+            {/* Shop Switcher / Identity Badge */}
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "13px", fontWeight: 700, color: "#71717a" }}>
-                Active Shop:
-              </span>
-              <select
-                value={selectedShopId}
-                onChange={(e) => setSelectedShopId(Number(e.target.value))}
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: "10px",
-                  border: "1px solid #d4d4d8",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  background: "white",
-                  cursor: "pointer",
-                }}
-              >
-                {shops.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.icon} {s.name}
-                  </option>
-                ))}
-              </select>
+              {isAdmin ? (
+                <>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#71717a" }}>
+                    👑 Admin Switch Shop:
+                  </span>
+                  <select
+                    value={selectedShopId}
+                    onChange={(e) => setSelectedShopId(Number(e.target.value))}
+                    style={{
+                      padding: "8px 14px",
+                      borderRadius: "10px",
+                      border: "1px solid #d4d4d8",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      background: "white",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {shops.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.icon} {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <div
+                  style={{
+                    background: "#f4f4f5",
+                    padding: "6px 14px",
+                    borderRadius: "10px",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    color: "#3f3f46",
+                  }}
+                >
+                  👤 Operator: <strong>{user?.name}</strong> ({user?.email})
+                </div>
+              )}
             </div>
           </div>
 
