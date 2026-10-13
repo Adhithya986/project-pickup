@@ -1,6 +1,7 @@
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "../components/Navbar";
+import { IconArrowRight, IconShield } from "../components/Icons";
 
 const pickupSlots = [
   "10:00 AM",
@@ -18,7 +19,6 @@ const pickupSlots = [
 export default function Pickup() {
   const location = useLocation();
   const navigate = useNavigate();
-
   const order = location.state;
 
   const [pickupDate, setPickupDate] = useState("Today");
@@ -35,9 +35,9 @@ export default function Pickup() {
         <Navbar />
         <main style={{ textAlign: "center", padding: "60px 20px" }}>
           <h2>No active print configuration</h2>
-          <p style={{ color: "#71717a" }}>Please select a shop and upload a file first.</p>
-          <Link to="/shops" className="shop-button" style={{ display: "inline-block", marginTop: "16px" }}>
-            Browse Shops →
+          <p style={{ color: "#64748b", margin: "8px 0 16px" }}>Please select a shop and upload a file first.</p>
+          <Link to="/shops" className="btn btn-primary btn-sm">
+            Browse Shops
           </Link>
         </main>
       </div>
@@ -50,7 +50,7 @@ export default function Pickup() {
       return;
     }
     if (!customerName.trim() || !customerPhone.trim()) {
-      setErrorMsg("Please enter your name and phone number.");
+      setErrorMsg("Please enter your name and contact phone number.");
       return;
     }
 
@@ -92,7 +92,6 @@ export default function Pickup() {
         setErrorMsg(result.message || "Failed to confirm booking.");
       }
     } catch (err: any) {
-      console.error(err);
       setErrorMsg("Connection error while creating booking. Please try again.");
     } finally {
       setSubmitting(false);
@@ -104,23 +103,27 @@ export default function Pickup() {
       <Navbar />
 
       <main>
-        <section className="pickup-header">
-          <Link to="/print" state={order} className="back-link">
+        {/* Header */}
+        <div style={{ marginBottom: "24px" }}>
+          <Link to="/print" state={order} style={{ fontSize: "13px", color: "#64748b", textDecoration: "none", display: "inline-block", marginBottom: "8px" }}>
             ← Back to print options
           </Link>
-
-          <p className="eyebrow">PICKUP SCHEDULING & DETAILS</p>
-          <h1>When would you like to pick it up?</h1>
-          <p className="hero-description">
-            Choose your pickup time and enter contact details. The shop will print your document in advance.
+          <h1 style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: "4px" }}>
+            Schedule Pickup & Contact Info
+          </h1>
+          <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
+            Vendor: <strong>{order.shopName || "ABC Digital Prints"}</strong>
           </p>
-        </section>
+        </div>
 
-        <section className="pickup-layout">
-          <div className="pickup-main">
-            {/* Date selection */}
-            <div className="pickup-section">
-              <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+        <div className="config-layout">
+          {/* Main options */}
+          <div>
+            {/* Slot picker */}
+            <div className="config-card">
+              <h2>1. Select Pickup Time Slot</h2>
+
+              <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
                 {["Today", "Tomorrow"].map((d) => (
                   <button
                     key={d}
@@ -128,40 +131,46 @@ export default function Pickup() {
                     className={`filter-tab ${pickupDate === d ? "active" : ""}`}
                     onClick={() => setPickupDate(d)}
                   >
-                    📅 {d}
+                    {d}
                   </button>
                 ))}
               </div>
 
-              <div className="date-heading">
-                <div>
-                  <span className="date-label">{pickupDate.toUpperCase()}</span>
-                  <h2>{pickupDate === "Today" ? "Available Pickup Slots Today" : "Available Tomorrow"}</h2>
-                </div>
-              </div>
-
-              <div className="slot-grid">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "10px" }}>
                 {pickupSlots.map((slot) => (
                   <button
                     key={slot}
                     type="button"
-                    className={`time-slot ${selectedSlot === slot ? "selected" : ""}`}
                     onClick={() => setSelectedSlot(slot)}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: selectedSlot === slot ? "2px solid #2563eb" : "1px solid #e2e8f0",
+                      background: selectedSlot === slot ? "#eff6ff" : "white",
+                      color: selectedSlot === slot ? "#2563eb" : "#334155",
+                      fontWeight: 650,
+                      fontSize: "13px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
                   >
-                    <strong>{slot}</strong>
-                    <span>{selectedSlot === slot ? "Selected" : "Available"}</span>
+                    <div>{slot}</div>
+                    <span style={{ fontSize: "11px", fontWeight: 400, color: selectedSlot === slot ? "#2563eb" : "#94a3b8" }}>
+                      {selectedSlot === slot ? "Selected" : "Available"}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Customer Details Form */}
-            <div className="pickup-section" style={{ marginTop: "24px" }}>
-              <h2 style={{ fontSize: "18px", margin: "0 0 14px" }}>
-                👤 Your Contact Information
-              </h2>
+            {/* Customer Contact */}
+            <div className="config-card">
+              <h2>2. Contact Information</h2>
+              <p style={{ fontSize: "13px", color: "#64748b", margin: "-6px 0 16px" }}>
+                Used for counter identification and pickup pass delivery.
+              </p>
 
-              <div className="form-input-group">
+              <div className="form-group">
                 <label>Full Name *</label>
                 <input
                   type="text"
@@ -172,8 +181,8 @@ export default function Pickup() {
                 />
               </div>
 
-              <div className="form-input-group">
-                <label>Phone Number (for pickup verification SMS) *</label>
+              <div className="form-group">
+                <label>Phone Number (for counter verification) *</label>
                 <input
                   type="tel"
                   placeholder="e.g. 9876543210"
@@ -183,71 +192,60 @@ export default function Pickup() {
                 />
               </div>
 
-              <div className="form-input-group">
-                <label>Email Address (Optional for digital receipt)</label>
+              <div className="form-group">
+                <label>Email Address (Optional for digital copy)</label>
                 <input
                   type="email"
-                  placeholder="e.g. rahul@example.com"
+                  placeholder="name@example.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                 />
               </div>
-            </div>
 
-            <div className="pickup-note">
-              <span>💡</span>
-              <div>
-                <strong>Zero Queue Guarantee</strong>
-                <p>
-                  Your order is queued in the shop's system immediately. Just arrive at your selected slot, scan your QR code at the counter, and pick up!
-                </p>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#f8fafc", padding: "12px 14px", borderRadius: "8px", fontSize: "12.5px", color: "#64748b", marginTop: "10px" }}>
+                <IconShield size={16} color="#059669" />
+                <span>Your contact details are encrypted and only shared with the selected print shopkeeper.</span>
               </div>
             </div>
           </div>
 
-          <aside className="price-summary">
-            <h2>Booking Summary</h2>
+          {/* Sticky Summary */}
+          <aside className="summary-panel">
+            <h3>Booking Review</h3>
 
-            <div className="summary-shop">
-              <span>Shop</span>
-              <strong>{order.shopName || "ABC Digital Prints"}</strong>
+            <div className="summary-row">
+              <span>Vendor</span>
+              <strong>{order.shopName}</strong>
             </div>
 
-            <div className="summary-line">
+            <div className="summary-row">
               <span>Document</span>
               <span style={{ maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {order.fileName || "Document"}
+                {order.fileName}
               </span>
             </div>
 
-            <div className="summary-line">
-              <span>Print Type</span>
+            <div className="summary-row">
+              <span>Print specs</span>
               <span>
-                {order.paper} • {order.colour === "bw" ? "B&W" : "Colour"} • {order.sides}
+                {order.copies}× {order.paper} ({order.colour === "bw" ? "B&W" : "Color"})
               </span>
             </div>
 
-            <div className="summary-line">
-              <span>Copies</span>
-              <span>{order.copies || 1}</span>
-            </div>
-
-            <div className="summary-line">
-              <span>Scheduled Pickup</span>
-              <span style={{ color: "#6d4aff", fontWeight: 700 }}>
+            <div className="summary-row">
+              <span>Pickup schedule</span>
+              <strong style={{ color: "#2563eb" }}>
                 {pickupDate}, {selectedSlot}
-              </span>
+              </strong>
             </div>
 
-            <div className="summary-divider" />
-
-            <div className="summary-total">
-              <span>Total Payable</span>
-              <strong>₹{order.total || 0}</strong>
+            <div className="summary-row total-row">
+              <span>Payable Total</span>
+              <span style={{ color: "#2563eb" }}>₹{order.total}</span>
             </div>
 
             {errorMsg && (
-              <p style={{ color: "#e11d48", fontSize: "13px", fontWeight: 600, margin: "10px 0" }}>
+              <p style={{ color: "#ef4444", fontSize: "13px", fontWeight: 600, margin: "14px 0 0" }}>
                 {errorMsg}
               </p>
             )}
@@ -256,11 +254,13 @@ export default function Pickup() {
               className="continue-button"
               disabled={submitting || !selectedSlot}
               onClick={handleConfirmBooking}
+              style={{ marginTop: "20px" }}
             >
-              {submitting ? "Booking into Database..." : "Confirm & Pre-Book Order →"}
+              <span>{submitting ? "Confirming..." : "Confirm & Pre-Book Order"}</span>
+              <IconArrowRight size={16} />
             </button>
           </aside>
-        </section>
+        </div>
       </main>
     </div>
   );

@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import Navbar from "../components/Navbar";
+import {
+  IconSearch,
+  IconClock,
+  IconQrCode,
+  IconDownload,
+  IconPrinter,
+  IconX,
+} from "../components/Icons";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -31,7 +39,7 @@ export default function MyBookings() {
           setBookings(data.data);
         }
       })
-      .catch((err) => console.error("Error fetching bookings:", err))
+      .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   };
 
@@ -62,192 +70,228 @@ export default function MyBookings() {
       <Navbar />
 
       <main>
-        <section className="shops-header">
-          <Link to="/" className="back-link">
-            ← Back to Home
-          </Link>
-          <p className="eyebrow">ORDER TRACKING</p>
-          <h1>My Print Bookings</h1>
-          <p className="hero-description">
-            Track your pre-booked print orders in real-time, view pickup QR codes, and collect without waiting.
-          </p>
-
-          <form onSubmit={handleSearchSubmit} className="search-box">
-            <span>🔍</span>
-            <input
-              type="text"
-              placeholder="Filter by phone number (e.g. 9876543210)..."
-              value={searchPhone}
-              onChange={(e) => setSearchPhone(e.target.value)}
-            />
-            <button
-              type="submit"
-              style={{
-                background: "#6d4aff",
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                padding: "8px 16px",
-                fontWeight: 600,
-                fontSize: "14px",
-              }}
-            >
-              Filter
-            </button>
-          </form>
-        </section>
-
-        {/* Filter Tabs */}
-        <section className="section">
-          <div className="filter-tabs">
-            {[
-              { id: "all", label: "All Orders" },
-              { id: "pending", label: "⏳ Pending" },
-              { id: "printing", label: "🖨️ Printing Now" },
-              { id: "ready", label: "✅ Ready for Pickup" },
-              { id: "completed", label: "📦 Completed" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                className={`filter-tab ${filter === tab.id ? "active" : ""}`}
-                onClick={() => setFilter(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {loading ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "#71717a" }}>
-              Loading bookings from database...
-            </div>
-          ) : bookings.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "60px 20px",
-                background: "white",
-                borderRadius: "16px",
-                border: "1px solid #e8e8ed",
-              }}
-            >
-              <h3>No bookings found</h3>
-              <p style={{ color: "#71717a" }}>
-                You have no print orders matching this status yet.
-              </p>
-              <Link to="/shops" className="shop-button" style={{ display: "inline-block", marginTop: "12px" }}>
-                Browse Shops & Pre-Book →
+        {/* Header */}
+        <div style={{ marginBottom: "28px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <Link to="/" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none", display: "inline-block", marginBottom: "8px" }}>
+                ← Back to Home
               </Link>
+              <h1 style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "-0.02em" }}>My Print Orders</h1>
+              <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
+                Track print jobs, view pickup time slots, and show your QR code at the counter.
+              </p>
             </div>
-          ) : (
-            <div className="orders-grid">
-              {bookings.map((booking) => (
-                <div className="order-card" key={booking.id}>
-                  <div className="order-card-info">
-                    <div className="order-card-icon">🖨️</div>
-                    <div className="order-card-details">
-                      <h4>
-                        {booking.id}
-                        <span className={`status-pill ${getStatusClass(booking.status)}`}>
-                          ● {booking.status}
-                        </span>
-                      </h4>
-                      <p>
-                        <strong>{booking.shopName}</strong> • {booking.documentName}
-                      </p>
-                      <div className="order-meta-chips">
-                        <span>🕒 Slot: {booking.pickupDate}, {booking.pickupSlot}</span>
-                        <span>📄 {booking.copies} copy ({booking.paperSize}, {booking.colour})</span>
-                        <span>💰 ₹{booking.totalPrice}</span>
-                      </div>
+
+            <form onSubmit={handleSearchSubmit} className="search-container" style={{ width: "300px" }}>
+              <IconSearch size={16} color="#64748b" />
+              <input
+                type="text"
+                placeholder="Filter by phone (e.g. 9876543210)..."
+                value={searchPhone}
+                onChange={(e) => setSearchPhone(e.target.value)}
+              />
+              <button type="submit" className="btn btn-secondary btn-sm" style={{ padding: "4px 8px" }}>
+                Filter
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="filter-tabs">
+          {[
+            { id: "all", label: "All Orders" },
+            { id: "pending", label: "Pending" },
+            { id: "printing", label: "Printing" },
+            { id: "ready", label: "Ready for Pickup" },
+            { id: "completed", label: "Completed" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              className={`filter-tab ${filter === tab.id ? "active" : ""}`}
+              onClick={() => setFilter(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+          <span style={{ marginLeft: "auto", fontSize: "13px", color: "#64748b", alignSelf: "center" }}>
+            {bookings.length} {bookings.length === 1 ? "order" : "orders"}
+          </span>
+        </div>
+
+        {/* Orders List */}
+        {loading ? (
+          <div style={{ padding: "60px", textAlign: "center", color: "#64748b" }}>
+            Loading your bookings...
+          </div>
+        ) : bookings.length === 0 ? (
+          <div
+            style={{
+              padding: "60px 20px",
+              textAlign: "center",
+              background: "white",
+              borderRadius: "16px",
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "6px" }}>No orders found</h3>
+            <p style={{ fontSize: "13.5px", color: "#64748b", marginBottom: "16px" }}>
+              You don't have any print jobs under this status.
+            </p>
+            <Link to="/shops" className="btn btn-primary btn-sm">
+              Browse Shops & Order
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {bookings.map((b) => (
+              <div
+                key={b.id}
+                style={{
+                  background: "white",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "12px",
+                  padding: "18px 22px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "16px",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <div
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "10px",
+                      background: "#eff6ff",
+                      color: "#2563eb",
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                  >
+                    <IconPrinter size={20} />
+                  </div>
+
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "3px" }}>
+                      <strong style={{ fontSize: "15px", color: "#0f172a" }}>{b.id}</strong>
+                      <span className={`status-pill ${getStatusClass(b.status)}`}>
+                        {b.status}
+                      </span>
+                    </div>
+
+                    <p style={{ fontSize: "13.5px", color: "#334155", margin: 0 }}>
+                      <strong>{b.shopName}</strong> • {b.documentName}
+                    </p>
+
+                    <div style={{ display: "flex", gap: "14px", fontSize: "12.5px", color: "#64748b", marginTop: "4px" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <IconClock size={13} />
+                        <span>{b.pickupDate}, {b.pickupSlot}</span>
+                      </span>
+                      <span>{b.copies} copies ({b.paperSize}, {b.colour})</span>
+                      <strong style={{ color: "#0f172a" }}>₹{b.totalPrice}</strong>
                     </div>
                   </div>
-
-                  <div className="order-actions">
-                    {booking.documentPath && (
-                      <a
-                        href={booking.documentPath}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="shop-button secondary-button"
-                        style={{ padding: "8px 14px", textDecoration: "none", fontSize: "13px" }}
-                        title="Download document"
-                      >
-                        📥 Document
-                      </a>
-                    )}
-                    <button
-                      className="shop-button"
-                      style={{ padding: "8px 16px", fontSize: "13px" }}
-                      onClick={() => setSelectedBookingForQR(booking)}
-                    >
-                      📱 Show QR Code
-                    </button>
-                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
 
-        {/* Modal for QR Code Display */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  {b.documentPath && (
+                    <a
+                      href={b.documentPath}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-secondary btn-sm"
+                      title="Download document file"
+                    >
+                      <IconDownload size={14} />
+                      <span>File</span>
+                    </a>
+                  )}
+
+                  <button
+                    onClick={() => setSelectedBookingForQR(b)}
+                    className="btn btn-primary btn-sm"
+                  >
+                    <IconQrCode size={14} />
+                    <span>Show Pickup Pass</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pickup QR Pass Modal */}
         {selectedBookingForQR && (
           <div className="modal-overlay" onClick={() => setSelectedBookingForQR(null)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <button
-                className="close-modal-btn"
-                onClick={() => setSelectedBookingForQR(null)}
-              >
-                ✕
+            <div className="modal-clean" onClick={(e) => e.stopPropagation()} style={{ textAlign: "center" }}>
+              <button className="modal-close-btn" onClick={() => setSelectedBookingForQR(null)}>
+                <IconX size={18} />
               </button>
 
-              <p className="eyebrow">COUNTER PICKUP PASS</p>
-              <h2 style={{ margin: "4px 0 12px" }}>{selectedBookingForQR.id}</h2>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                COUNTER PICKUP PASS
+              </span>
+              <h2 style={{ fontSize: "20px", fontWeight: 800, margin: "4px 0 2px" }}>
+                {selectedBookingForQR.id}
+              </h2>
+              <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 16px" }}>
+                {selectedBookingForQR.shopName} • Scheduled: {selectedBookingForQR.pickupDate}, {selectedBookingForQR.pickupSlot}
+              </p>
 
               <div
                 style={{
-                  background: "#f0ebff",
-                  padding: "10px 14px",
-                  borderRadius: "10px",
-                  marginBottom: "18px",
-                  fontSize: "14px",
+                  background: "white",
+                  padding: "16px",
+                  borderRadius: "14px",
+                  border: "1px solid #e2e8f0",
+                  display: "inline-block",
+                  boxShadow: "var(--shadow-sm)",
+                  marginBottom: "16px",
                 }}
               >
-                <strong>{selectedBookingForQR.shopName}</strong>
-                <br />
-                <span style={{ color: "#6d4aff" }}>
-                  Pickup: {selectedBookingForQR.pickupDate}, {selectedBookingForQR.pickupSlot}
-                </span>
-              </div>
-
-              <div className="qr-wrapper">
                 <QRCodeSVG
                   value={selectedBookingForQR.qrToken || selectedBookingForQR.id}
-                  size={190}
+                  size={180}
                   level="M"
                 />
               </div>
 
-              <p style={{ color: "#71717a", fontSize: "13px", marginTop: "12px" }}>
-                Show this QR code to the counter operator at pickup.
-              </p>
-
               <div
                 style={{
-                  marginTop: "16px",
-                  padding: "12px",
-                  background: "#f4f4f5",
+                  background: "#f8fafc",
+                  padding: "12px 16px",
                   borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
                   fontSize: "13px",
                   display: "flex",
                   justifyContent: "space-between",
+                  textAlign: "left",
+                  marginBottom: "16px",
                 }}
               >
-                <span>Status:</span>
-                <strong className={`status-pill ${getStatusClass(selectedBookingForQR.status)}`}>
-                  {selectedBookingForQR.status}
-                </strong>
+                <div>
+                  <span style={{ color: "#64748b", fontSize: "11.5px" }}>Status</span>
+                  <div>
+                    <span className={`status-pill ${getStatusClass(selectedBookingForQR.status)}`}>
+                      {selectedBookingForQR.status}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span style={{ color: "#64748b", fontSize: "11.5px" }}>Total Amount</span>
+                  <div style={{ fontWeight: 700, color: "#0f172a" }}>₹{selectedBookingForQR.totalPrice}</div>
+                </div>
               </div>
+
+              <p style={{ fontSize: "12.5px", color: "#64748b", margin: 0 }}>
+                Show this barcode to the counter clerk when collecting your order.
+              </p>
             </div>
           </div>
         )}

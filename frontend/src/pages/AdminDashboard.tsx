@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import { IconDownload, IconX } from "../components/Icons";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -19,12 +20,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeAdminTab, setActiveAdminTab] = useState<"shops" | "orders" | "system">("shops");
 
-  // Filter & Search states
   const [selectedShopFilter, setSelectedShopFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Add Shop Modal
   const [showAddShopModal, setShowAddShopModal] = useState(false);
   const [newShopName, setNewShopName] = useState("");
   const [newShopCategory, setNewShopCategory] = useState("Printing");
@@ -35,7 +34,6 @@ export default function AdminDashboard() {
   const [newShopTagline, setNewShopTagline] = useState("");
 
   const fetchAdminData = () => {
-    // 1. Stats
     fetch("/api/stats")
       .then((res) => res.json())
       .then((data) => {
@@ -43,7 +41,6 @@ export default function AdminDashboard() {
       })
       .catch((err) => console.error(err));
 
-    // 2. Shops
     fetch("/api/shops")
       .then((res) => res.json())
       .then((data) => {
@@ -51,7 +48,6 @@ export default function AdminDashboard() {
       })
       .catch((err) => console.error(err));
 
-    // 3. Global Orders
     const params = new URLSearchParams();
     if (selectedShopFilter !== "all") params.set("shopId", selectedShopFilter);
     if (statusFilter !== "all") params.set("status", statusFilter);
@@ -83,11 +79,11 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           name: newShopName.trim(),
           category: newShopCategory,
-          address: newShopAddress.trim() || "Campus Main Complex",
+          address: newShopAddress.trim() || "Campus Complex",
           phone: newShopPhone.trim() || "+91 98000 00000",
           startingPrice: newShopPrice.trim() || "From ₹2",
           openHours: newShopHours.trim() || "8:00 AM - 10:00 PM",
-          tagline: newShopTagline.trim() || "Printing & Photocopy Services",
+          tagline: newShopTagline.trim() || "Print & Photocopy",
           distance: "0.5 km",
           icon: newShopCategory === "Stationery" ? "📚" : "🖨️",
         }),
@@ -105,7 +101,6 @@ export default function AdminDashboard() {
         alert(data.message || "Failed to create shop");
       }
     } catch (err) {
-      console.error(err);
       alert("Error adding new shop");
     }
   };
@@ -118,12 +113,8 @@ export default function AdminDashboard() {
         body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
-      if (data.success) {
-        fetchAdminData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
+      if (data.success) fetchAdminData();
+    } catch (err) {}
   };
 
   const getStatusClass = (status: string) => {
@@ -144,291 +135,264 @@ export default function AdminDashboard() {
       <Navbar />
 
       <main>
-        <section className="shops-header">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px" }}>
-            <Link to="/" className="back-link">
+        {/* Header */}
+        <div style={{ marginBottom: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "12px" }}>
+            <Link to="/" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none" }}>
               ← Storefront View
             </Link>
 
-            <Link
-              to="/shop-dashboard"
-              className="shop-button secondary-button"
-              style={{ fontSize: "13px", padding: "8px 14px" }}
-            >
-              🏪 Switch to Shop Operator View →
-            </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "13px", color: "#334155", background: "#f1f5f9", padding: "5px 12px", borderRadius: "20px" }}>
+                Admin: <strong>{user?.name || "Campus System Admin"}</strong>
+              </span>
+              <Link to="/shop-dashboard" className="btn btn-secondary btn-sm">
+                Switch to Counter View →
+              </Link>
+            </div>
           </div>
 
-          <p className="eyebrow">PLATFORM SUPER ADMIN</p>
-          <h1>Campus Network Control Center</h1>
-          <p className="hero-description">
-            Platform-wide management for campus administration. Oversee all registered print shops, review global order transactions, and monitor system health.
+          <h1 style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: "4px" }}>
+            Platform Administration Console
+          </h1>
+          <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
+            Central campus control center. Monitor vendors, audit orders, and manage platform health.
           </p>
+        </div>
 
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "10px",
-              background: "#18181b",
-              color: "white",
-              padding: "6px 14px",
-              borderRadius: "20px",
-              fontSize: "13px",
-              marginTop: "10px",
-            }}
-          >
-            <span>👑 Authenticated Admin:</span>
-            <strong>{user?.name || "Campus System Admin"}</strong>
-            <span style={{ color: "#a1a1aa" }}>({user?.email || "admin@localpickup.com"})</span>
+        {/* Global KPIs */}
+        <div className="kpi-container">
+          <div className="kpi-box">
+            <div className="label">Total Network Revenue</div>
+            <div className="val" style={{ color: "#2563eb" }}>₹{stats.totalRevenue}</div>
           </div>
-        </section>
-
-        {/* Global Platform KPIs */}
-        <section className="kpi-grid">
-          <div className="kpi-card">
-            <div className="kpi-label">Total Platform Revenue</div>
-            <div className="kpi-value" style={{ color: "#6d4aff" }}>
-              ₹{stats.totalRevenue}
-            </div>
+          <div className="kpi-box">
+            <div className="label">Total Platform Orders</div>
+            <div className="val">{stats.totalOrders}</div>
           </div>
-
-          <div className="kpi-card">
-            <div className="kpi-label">Total Network Orders</div>
-            <div className="kpi-value">{stats.totalOrders}</div>
+          <div className="kpi-box">
+            <div className="label">Registered Vendors</div>
+            <div className="val">{stats.shopCount}</div>
           </div>
-
-          <div className="kpi-card">
-            <div className="kpi-label">Registered Shops</div>
-            <div className="kpi-value">{stats.shopCount}</div>
-          </div>
-
-          <div className="kpi-card" style={{ borderColor: "#bae6fd" }}>
-            <div className="kpi-label" style={{ color: "#0284c7" }}>
-              Active Jobs
-            </div>
-            <div className="kpi-value" style={{ color: "#0369a1" }}>
+          <div className="kpi-box">
+            <div className="label">Active Queue Load</div>
+            <div className="val" style={{ color: "#0284c7" }}>
               {stats.pendingOrders + stats.printingOrders}
             </div>
           </div>
-        </section>
+        </div>
 
         {/* Admin Navigation Tabs */}
-        <div style={{ display: "flex", gap: "14px", borderBottom: "1px solid #e4e4e7", marginBottom: "24px" }}>
+        <div style={{ display: "flex", gap: "10px", borderBottom: "1px solid #e2e8f0", marginBottom: "22px" }}>
           <button
             className={`nav-link ${activeAdminTab === "shops" ? "active" : ""}`}
-            style={{ fontSize: "16px", padding: "10px 18px", borderBottom: activeAdminTab === "shops" ? "2px solid #6d4aff" : "none" }}
+            style={{ fontSize: "14.5px", padding: "8px 16px", borderRadius: "6px" }}
             onClick={() => setActiveAdminTab("shops")}
           >
-            🏪 Managed Shops ({shops.length})
+            Registered Print Shops ({shops.length})
           </button>
           <button
             className={`nav-link ${activeAdminTab === "orders" ? "active" : ""}`}
-            style={{ fontSize: "16px", padding: "10px 18px", borderBottom: activeAdminTab === "orders" ? "2px solid #6d4aff" : "none" }}
+            style={{ fontSize: "14.5px", padding: "8px 16px", borderRadius: "6px" }}
             onClick={() => setActiveAdminTab("orders")}
           >
-            📋 Master Orders Audit ({orders.length})
+            Master Orders Audit ({orders.length})
           </button>
           <button
             className={`nav-link ${activeAdminTab === "system" ? "active" : ""}`}
-            style={{ fontSize: "16px", padding: "10px 18px", borderBottom: activeAdminTab === "system" ? "2px solid #6d4aff" : "none" }}
+            style={{ fontSize: "14.5px", padding: "8px 16px", borderRadius: "6px" }}
             onClick={() => setActiveAdminTab("system")}
           >
-            ⚡ System & Database
+            System Diagnostics
           </button>
         </div>
 
-        {/* TAB 1: Shops Management */}
+        {/* TAB 1: Registered Shops */}
         {activeAdminTab === "shops" && (
-          <section className="section" style={{ marginTop: "10px" }}>
-            <div className="section-header">
-              <h2>Registered Print Shops & Vendors</h2>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 700 }}>Print Shops & Campus Vendors</h2>
               <button
-                className="shop-button"
-                style={{ fontSize: "13px" }}
+                className="btn btn-primary btn-sm"
                 onClick={() => setShowAddShopModal(true)}
               >
                 + Register New Shop
               </button>
             </div>
 
-            <div className="orders-grid">
-              {shops.map((shop) => (
-                <div className="order-card" key={shop.id}>
-                  <div className="order-card-info">
-                    <div className="order-card-icon">{shop.icon || "🖨️"}</div>
-                    <div className="order-card-details">
-                      <h4>
-                        {shop.name}
-                        <span style={{ fontSize: "12px", color: "#6d4aff", background: "#f0ebff", padding: "2px 8px", borderRadius: "8px" }}>
-                          {shop.category}
-                        </span>
-                      </h4>
-                      <p>
-                        📍 {shop.address} • 📞 {shop.phone}
-                      </p>
-                      <div className="order-meta-chips">
-                        <span>⭐ Rating: {shop.rating}</span>
-                        <span>🕒 Hours: {shop.openHours}</span>
-                        <span>📦 Total Orders: {shop.totalOrders || 0}</span>
-                        <span>💰 {shop.startingPrice}</span>
-                      </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "16px" }}>
+              {shops.map((s) => (
+                <div
+                  key={s.id}
+                  style={{
+                    background: "white",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                      <span className="shop-badge">{s.category}</span>
+                      <span style={{ fontSize: "13px", fontWeight: 700 }}>★ {s.rating}</span>
+                    </div>
+
+                    <h3 style={{ fontSize: "17px", fontWeight: 700, margin: "2px 0 4px" }}>{s.name}</h3>
+                    <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>📍 {s.address}</p>
+                    <p style={{ fontSize: "12.5px", color: "#64748b", margin: "2px 0" }}>📞 {s.phone}</p>
+
+                    <div style={{ display: "flex", gap: "12px", fontSize: "12px", color: "#64748b", marginTop: "12px" }}>
+                      <span>🕒 {s.openHours}</span>
+                      <span>📦 {s.totalOrders || 0} total orders</span>
                     </div>
                   </div>
 
-                  <div className="order-actions">
+                  <div style={{ display: "flex", gap: "8px", marginTop: "16px", paddingTop: "14px", borderTop: "1px solid #f1f5f9" }}>
                     <Link
-                      to={`/shops/${shop.id}`}
-                      className="shop-button secondary-button"
-                      style={{ fontSize: "12px", padding: "8px 12px" }}
+                      to={`/shops/${s.id}`}
+                      className="btn btn-secondary btn-sm"
+                      style={{ flex: 1, justifyContent: "center" }}
                     >
-                      Storefront View
+                      Storefront
                     </Link>
                     <Link
                       to="/shop-dashboard"
-                      onClick={() => localStorage.setItem("operator_shop_id", String(shop.id))}
-                      className="shop-button"
-                      style={{ fontSize: "12px", padding: "8px 14px" }}
+                      onClick={() => localStorage.setItem("operator_shop_id", String(s.id))}
+                      className="btn btn-dark btn-sm"
+                      style={{ flex: 1, justifyContent: "center" }}
                     >
-                      Open Operator Counter →
+                      Open Counter →
                     </Link>
                   </div>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
         )}
 
         {/* TAB 2: Master Orders Audit */}
         {activeAdminTab === "orders" && (
-          <section className="section" style={{ marginTop: "10px" }}>
-            <div className="section-header" style={{ flexWrap: "wrap", gap: "10px" }}>
-              <h2>Global Orders Log</h2>
-
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
               <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                {/* Shop Filter */}
                 <select
                   value={selectedShopFilter}
                   onChange={(e) => setSelectedShopFilter(e.target.value)}
                   style={{
-                    padding: "8px 12px",
+                    padding: "6px 12px",
                     borderRadius: "8px",
-                    border: "1px solid #e4e4e7",
+                    border: "1px solid #cbd5e1",
                     fontSize: "13px",
+                    background: "white",
                   }}
                 >
                   <option value="all">All Shops</option>
                   {shops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
+                    <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
                 </select>
 
+                <div className="filter-tabs" style={{ marginBottom: 0 }}>
+                  {[
+                    { id: "all", label: "All" },
+                    { id: "pending", label: "Pending" },
+                    { id: "printing", label: "Printing" },
+                    { id: "ready", label: "Ready" },
+                    { id: "completed", label: "Completed" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      className={`filter-tab ${statusFilter === tab.id ? "active" : ""}`}
+                      onClick={() => setStatusFilter(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "8px" }}>
                 <input
                   type="text"
-                  placeholder="Search order ID, phone, customer..."
+                  placeholder="Search customer, ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
-                    padding: "8px 12px",
+                    padding: "6px 12px",
                     borderRadius: "8px",
-                    border: "1px solid #e4e4e7",
+                    border: "1px solid #cbd5e1",
                     fontSize: "13px",
                   }}
                 />
-
-                <button
-                  onClick={fetchAdminData}
-                  className="shop-button secondary-button"
-                  style={{ fontSize: "13px", padding: "8px 14px" }}
-                >
-                  🔄 Refresh
+                <button onClick={fetchAdminData} className="btn btn-secondary btn-sm">
+                  Refresh
                 </button>
               </div>
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="filter-tabs">
-              {[
-                { id: "all", label: "All Orders" },
-                { id: "pending", label: "⏳ Pending" },
-                { id: "printing", label: "🖨️ Printing" },
-                { id: "ready", label: "✅ Ready" },
-                { id: "completed", label: "📦 Completed" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  className={`filter-tab ${statusFilter === tab.id ? "active" : ""}`}
-                  onClick={() => setStatusFilter(tab.id)}
-                >
-                  {tab.label}
-                </button>
-              ))}
             </div>
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: "40px", color: "#71717a" }}>
-                Loading global orders...
-              </div>
+              <div style={{ padding: "60px", textAlign: "center", color: "#64748b" }}>Loading orders log...</div>
             ) : orders.length === 0 ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "50px 20px",
-                  background: "white",
-                  borderRadius: "16px",
-                  border: "1px solid #e8e8ed",
-                }}
-              >
-                <h3>No orders found</h3>
-                <p style={{ color: "#71717a" }}>No orders matching current admin filters.</p>
+              <div style={{ padding: "50px", textAlign: "center", background: "white", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "4px" }}>No orders match filter</h3>
               </div>
             ) : (
-              <div className="orders-grid">
-                {orders.map((order) => (
-                  <div className="order-card" key={order.id}>
-                    <div className="order-card-info">
-                      <div className="order-card-icon">🖨️</div>
-                      <div className="order-card-details">
-                        <h4>
-                          {order.id}
-                          <span className={`status-pill ${getStatusClass(order.status)}`}>
-                            ● {order.status}
-                          </span>
-                          <span style={{ fontSize: "12px", color: "#52525b", fontWeight: 600 }}>
-                            [@ {order.shopName}]
-                          </span>
-                        </h4>
-                        <p>
-                          Customer: <strong>{order.customerName}</strong> (📞 {order.customerPhone}) • Doc: <strong>{order.documentName}</strong>
-                        </p>
-                        <div className="order-meta-chips">
-                          <span>🕒 {order.pickupDate}, {order.pickupSlot}</span>
-                          <span>📄 {order.copies} copies ({order.paperSize}, {order.colour})</span>
-                          <span>💰 ₹{order.totalPrice}</span>
-                        </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {orders.map((o) => (
+                  <div
+                    key={o.id}
+                    style={{
+                      background: "white",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "10px",
+                      padding: "16px 20px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: "14px",
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "3px" }}>
+                        <strong>{o.id}</strong>
+                        <span className={`status-pill ${getStatusClass(o.status)}`}>{o.status}</span>
+                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#2563eb" }}>
+                          [{o.shopName}]
+                        </span>
+                      </div>
+
+                      <p style={{ fontSize: "13px", color: "#475569", margin: "2px 0" }}>
+                        Customer: <strong>{o.customerName}</strong> ({o.customerPhone}) • Doc: {o.documentName}
+                      </p>
+
+                      <div style={{ display: "flex", gap: "14px", fontSize: "12px", color: "#64748b" }}>
+                        <span>🕒 {o.pickupDate}, {o.pickupSlot}</span>
+                        <span>{o.copies} copies ({o.paperSize}, {o.colour})</span>
+                        <strong style={{ color: "#0f172a" }}>₹{o.totalPrice}</strong>
                       </div>
                     </div>
 
-                    <div className="order-actions">
-                      {order.documentPath && (
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                      {o.documentPath && (
                         <a
-                          href={order.documentPath}
+                          href={o.documentPath}
                           target="_blank"
                           rel="noreferrer"
-                          className="shop-button secondary-button"
-                          style={{ padding: "8px 12px", fontSize: "12px", textDecoration: "none" }}
+                          className="btn btn-secondary btn-sm"
                         >
-                          📥 View Doc
+                          <IconDownload size={14} />
+                          <span>View Doc</span>
                         </a>
                       )}
 
-                      {order.status !== "completed" && (
+                      {o.status !== "completed" && (
                         <button
-                          className="shop-button"
-                          style={{ padding: "8px 12px", fontSize: "12px", background: "#18181b" }}
-                          onClick={() => handleAdminUpdateStatus(order.id, "completed")}
+                          onClick={() => handleAdminUpdateStatus(o.id, "completed")}
+                          className="btn btn-dark btn-sm"
                         >
                           Force Complete
                         </button>
@@ -438,93 +402,63 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
-          </section>
+          </div>
         )}
 
-        {/* TAB 3: System & Database Diagnostics */}
+        {/* TAB 3: System Diagnostics */}
         {activeAdminTab === "system" && (
-          <section className="section" style={{ marginTop: "10px" }}>
-            <div
-              style={{
-                background: "white",
-                padding: "26px",
-                borderRadius: "16px",
-                border: "1px solid #e8e8ed",
-              }}
-            >
-              <h2 style={{ margin: "0 0 16px" }}>⚡ Backend & Database Diagnostics</h2>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
-                <div style={{ padding: "16px", background: "#f4f4f5", borderRadius: "12px" }}>
-                  <div style={{ fontSize: "12px", color: "#71717a", fontWeight: 700 }}>DATABASE ENGINE</div>
-                  <div style={{ fontSize: "18px", fontWeight: 700, marginTop: "4px" }}>
-                    SQLite 3 (better-sqlite3)
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#16a34a", marginTop: "4px" }}>
-                    ● WAL Journal Mode (High Performance)
-                  </div>
-                </div>
-
-                <div style={{ padding: "16px", background: "#f4f4f5", borderRadius: "12px" }}>
-                  <div style={{ fontSize: "12px", color: "#71717a", fontWeight: 700 }}>API STATUS</div>
-                  <div style={{ fontSize: "18px", fontWeight: 700, marginTop: "4px" }}>
-                    Express.js (Port 5000)
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#16a34a", marginTop: "4px" }}>
-                    ● Healthy & Serving Requests
-                  </div>
-                </div>
-
-                <div style={{ padding: "16px", background: "#f4f4f5", borderRadius: "12px" }}>
-                  <div style={{ fontSize: "12px", color: "#71717a", fontWeight: 700 }}>UPLOADED FILES</div>
-                  <div style={{ fontSize: "18px", fontWeight: 700, marginTop: "4px" }}>
-                    backend/uploads/
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#52525b", marginTop: "4px" }}>
-                    Static File Server Active
-                  </div>
-                </div>
+          <div style={{ background: "white", padding: "26px", borderRadius: "14px", border: "1px solid #e2e8f0" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "16px" }}>Platform Engine & Database</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+              <div style={{ padding: "16px", background: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Database Engine</div>
+                <div style={{ fontSize: "16px", fontWeight: 700, marginTop: "4px" }}>SQLite 3 (better-sqlite3)</div>
+                <div style={{ fontSize: "12px", color: "#059669", marginTop: "2px" }}>✓ WAL Journal Mode Active</div>
+              </div>
+              <div style={{ padding: "16px", background: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Backend Runtime</div>
+                <div style={{ fontSize: "16px", fontWeight: 700, marginTop: "4px" }}>Express.js API (:5000)</div>
+                <div style={{ fontSize: "12px", color: "#059669", marginTop: "2px" }}>✓ Serving Requests Cleanly</div>
+              </div>
+              <div style={{ padding: "16px", background: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>File Storage</div>
+                <div style={{ fontSize: "16px", fontWeight: 700, marginTop: "4px" }}>backend/uploads/</div>
+                <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>Direct Static Server</div>
               </div>
             </div>
-          </section>
+          </div>
         )}
 
-        {/* Modal: Register New Shop */}
+        {/* Add Shop Modal */}
         {showAddShopModal && (
           <div className="modal-overlay" onClick={() => setShowAddShopModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ textAlign: "left" }}>
-              <button className="close-modal-btn" onClick={() => setShowAddShopModal(false)}>
-                ✕
+            <div className="modal-clean" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close-btn" onClick={() => setShowAddShopModal(false)}>
+                <IconX size={18} />
               </button>
 
-              <h2 style={{ margin: "0 0 14px", textAlign: "center" }}>Register New Print Shop</h2>
-              <p style={{ color: "#71717a", fontSize: "13px", textAlign: "center", marginBottom: "20px" }}>
-                Add a new verified campus or local print shop to the network.
+              <h2 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "4px" }}>Register Print Shop</h2>
+              <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "16px" }}>
+                Add a new campus or neighborhood vendor to the LocalPickup network.
               </p>
 
               <form onSubmit={handleAddShopSubmit}>
-                <div className="form-input-group">
+                <div className="form-group">
                   <label>Shop Name *</label>
                   <input
                     type="text"
-                    placeholder="e.g. Metro Xerox & Digital Hub"
+                    placeholder="e.g. Science Block Xerox & Prints"
                     value={newShopName}
                     onChange={(e) => setNewShopName(e.target.value)}
                     required
                   />
                 </div>
 
-                <div className="form-input-group">
+                <div className="form-group">
                   <label>Category</label>
                   <select
                     value={newShopCategory}
                     onChange={(e) => setNewShopCategory(e.target.value)}
-                    style={{
-                      padding: "11px 14px",
-                      borderRadius: "10px",
-                      border: "1px solid #e4e4e7",
-                      fontSize: "14px",
-                    }}
                   >
                     <option value="Printing">Printing</option>
                     <option value="Stationery">Stationery</option>
@@ -532,40 +466,40 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div className="form-input-group">
-                  <label>Address / Campus Location *</label>
+                <div className="form-group">
+                  <label>Address / Location *</label>
                   <input
                     type="text"
-                    placeholder="e.g. Science Block, Ground Floor"
+                    placeholder="e.g. Near North Gate Canteen"
                     value={newShopAddress}
                     onChange={(e) => setNewShopAddress(e.target.value)}
                     required
                   />
                 </div>
 
-                <div className="form-input-group">
-                  <label>Contact Phone Number *</label>
+                <div className="form-group">
+                  <label>Phone Number *</label>
                   <input
                     type="text"
-                    placeholder="e.g. +91 98111 22334"
+                    placeholder="+91 98000 00000"
                     value={newShopPhone}
                     onChange={(e) => setNewShopPhone(e.target.value)}
                     required
                   />
                 </div>
 
-                <div className="form-input-group">
-                  <label>Tagline / Specialties</label>
+                <div className="form-group">
+                  <label>Tagline / Highlights</label>
                   <input
                     type="text"
-                    placeholder="e.g. Laser Printing • Posters • Hard Binding"
+                    placeholder="e.g. High-speed laser & project binding"
                     value={newShopTagline}
                     onChange={(e) => setNewShopTagline(e.target.value)}
                   />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "14px" }}>
-                  <div className="form-input-group">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div className="form-group">
                     <label>Starting Price</label>
                     <input
                       type="text"
@@ -573,7 +507,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setNewShopPrice(e.target.value)}
                     />
                   </div>
-                  <div className="form-input-group">
+                  <div className="form-group">
                     <label>Operating Hours</label>
                     <input
                       type="text"
@@ -583,13 +517,13 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: "24px", display: "flex", gap: "10px" }}>
-                  <button type="submit" className="shop-button" style={{ flex: 1 }}>
+                <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                  <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
                     Register Shop
                   </button>
                   <button
                     type="button"
-                    className="shop-button secondary-button"
+                    className="btn btn-secondary"
                     onClick={() => setShowAddShopModal(false)}
                   >
                     Cancel

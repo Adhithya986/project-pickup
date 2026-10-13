@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import {
+  IconSearch,
+  IconMapPin,
+  IconStar,
+  IconClock,
+  IconArrowRight,
+  IconX,
+} from "../components/Icons";
 
 export default function Shops() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,134 +53,128 @@ export default function Shops() {
       <Navbar />
 
       <main>
-        <section className="shops-header">
-          <Link to="/" className="back-link">
-            ← Back to home
-          </Link>
-
-          <p className="eyebrow">DISCOVER SHOPS</p>
-          <h1>Find a Local Print Shop</h1>
-          <p className="hero-description">
-            Choose a campus or neighborhood shop, pre-book your documents, and pick them up freshly printed.
-          </p>
-
-          <div className="search-box">
-            <span>🔍</span>
-            <input
-              type="text"
-              placeholder="Search by shop name, service, or location..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#a1a1aa",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="categories">
-            {["All", "Printing", "Stationery"].map((cat) => (
-              <button
-                key={cat}
-                className={`category ${category === cat ? "active" : ""}`}
-                onClick={() => handleCategoryClick(cat)}
-              >
-                {cat === "All" ? "⚡ All Shops" : cat === "Printing" ? "🖨️ Printing" : "📚 Stationery"}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="section-header">
-            <h2>Available Shops</h2>
-            <span className="shop-count">{shops.length} verified shops</span>
-          </div>
-
-          {loading ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "#71717a" }}>
-              Loading print shops...
+        {/* Header */}
+        <section style={{ marginBottom: "28px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <Link to="/" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none", display: "inline-block", marginBottom: "8px" }}>
+                ← Back to home
+              </Link>
+              <h1 style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "-0.02em" }}>Local Print Shops</h1>
+              <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
+                Select a local vendor to pre-book printing, binding, and document services.
+              </p>
             </div>
-          ) : shops.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "50px 20px",
-                background: "white",
-                borderRadius: "16px",
-                border: "1px solid #e8e8ed",
-              }}
+
+            <div className="search-container" style={{ width: "320px" }}>
+              <IconSearch size={16} color="#64748b" />
+              <input
+                type="text"
+                placeholder="Search shops or services..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button type="button" onClick={() => setSearch("")} style={{ color: "#94a3b8" }}>
+                  <IconX size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Filter Pills */}
+        <div className="filter-tabs">
+          {["All", "Printing", "Stationery"].map((cat) => (
+            <button
+              key={cat}
+              className={`filter-tab ${category === cat ? "active" : ""}`}
+              onClick={() => handleCategoryClick(cat)}
             >
-              <h3>No shops found</h3>
-              <p style={{ color: "#71717a" }}>Try adjusting your search query or category filter.</p>
-              <button
-                onClick={() => {
-                  setSearch("");
-                  setCategory("All");
-                }}
-                className="shop-button"
-                style={{ marginTop: "12px" }}
-              >
-                Reset Filters
-              </button>
-            </div>
-          ) : (
-            shops.map((shop) => (
-              <div className="shop-card" key={shop.id}>
-                <div className="shop-icon">{shop.icon || "🖨️"}</div>
+              {cat === "All" ? "All Vendors" : cat}
+            </button>
+          ))}
+          <span style={{ marginLeft: "auto", fontSize: "13px", color: "#64748b", alignSelf: "center" }}>
+            {shops.length} verified {shops.length === 1 ? "shop" : "shops"}
+          </span>
+        </div>
 
-                <div className="shop-info">
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <h3>{shop.name}</h3>
-                    {shop.isPopular === 1 && (
-                      <span
-                        style={{
-                          background: "#f0ebff",
-                          color: "#6d4aff",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          padding: "2px 8px",
-                          borderRadius: "12px",
-                        }}
-                      >
-                        Popular
-                      </span>
-                    )}
+        {/* Shop Grid */}
+        {loading ? (
+          <div style={{ padding: "60px", textAlign: "center", color: "#64748b" }}>
+            Loading print shops...
+          </div>
+        ) : shops.length === 0 ? (
+          <div
+            style={{
+              padding: "60px 20px",
+              textAlign: "center",
+              background: "white",
+              borderRadius: "16px",
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "6px" }}>No shops match your search</h3>
+            <p style={{ fontSize: "13.5px", color: "#64748b", marginBottom: "16px" }}>
+              Try searching a different location or reset your category filter.
+            </p>
+            <button
+              onClick={() => {
+                setSearch("");
+                setCategory("All");
+              }}
+              className="btn btn-secondary btn-sm"
+            >
+              Reset filters
+            </button>
+          </div>
+        ) : (
+          <div className="shop-card-grid">
+            {shops.map((shop) => (
+              <div className="shop-card-clean" key={shop.id}>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                    <span className="shop-badge">{shop.category}</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "13px", fontWeight: 650, color: "#0f172a" }}>
+                      <IconStar size={14} color="#f59e0b" />
+                      <span>{shop.rating}</span>
+                      <span style={{ color: "#94a3b8", fontWeight: 400 }}>({shop.reviewCount})</span>
+                    </span>
                   </div>
 
-                  <p>{shop.tagline || shop.description}</p>
-                  <p style={{ fontSize: "12px", color: "#a1a1aa", marginTop: "2px" }}>
-                    📍 {shop.address}
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, marginBottom: "4px" }}>{shop.name}</h3>
+                  <p style={{ fontSize: "13px", color: "#64748b", lineHeight: 1.45 }}>{shop.tagline}</p>
+                  <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
+                    {shop.address}
                   </p>
 
-                  <div className="shop-meta">
-                    <span>⭐ {shop.rating} ({shop.reviewCount} reviews)</span>
-                    <span>📍 {shop.distance} away</span>
-                    <span>🕒 {shop.openHours}</span>
-                    <span>💰 {shop.startingPrice}</span>
+                  <div className="meta-row">
+                    <span className="meta-item">
+                      <IconMapPin size={14} />
+                      <span>{shop.distance}</span>
+                    </span>
+                    <span className="meta-item">
+                      <IconClock size={14} />
+                      <span>{shop.openHours}</span>
+                    </span>
                   </div>
                 </div>
 
-                <Link to={`/shops/${shop.id}`} className="shop-button">
-                  View Shop
-                </Link>
+                <div style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>{shop.startingPrice}</span>
+                  <Link
+                    to={`/shops/${shop.id}`}
+                    className="btn btn-primary btn-sm"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <span>View Shop</span>
+                    <IconArrowRight size={14} />
+                  </Link>
+                </div>
               </div>
-            ))
-          )}
-        </section>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { IconStore, IconSettings, IconLogOut, IconPrinter } from "./Icons";
 
 export default function Navbar() {
   const location = useLocation();
@@ -9,7 +10,6 @@ export default function Navbar() {
   const [activeBookingsCount, setActiveBookingsCount] = useState<number>(0);
 
   useEffect(() => {
-    // Check active bookings count from backend
     fetch("/api/bookings")
       .then((res) => res.json())
       .then((data) => {
@@ -31,7 +31,10 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <Link to="/" className="logo">
-        Local<span>Pickup</span>
+        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "28px", height: "28px", background: "#2563eb", color: "white", borderRadius: "8px" }}>
+          <IconPrinter size={16} />
+        </span>
+        <span>LocalPickup</span>
       </Link>
 
       <nav className="nav-links">
@@ -43,7 +46,7 @@ export default function Navbar() {
         </Link>
         <Link
           to="/shops"
-          className={`nav-link ${location.pathname === "/shops" ? "active" : ""}`}
+          className={`nav-link ${location.pathname.startsWith("/shops") ? "active" : ""}`}
         >
           Browse Shops
         </Link>
@@ -57,23 +60,25 @@ export default function Navbar() {
           )}
         </Link>
 
-        {/* Dashboard links based on role */}
         {isShopOperator && (
           <Link
             to="/shop-dashboard"
             className={`nav-link ${location.pathname === "/shop-dashboard" ? "active" : ""}`}
-            style={{ background: "#f0ebff", color: "#6d4aff" }}
+            style={{ color: "#2563eb", background: "#eff6ff" }}
           >
-            <span>🏪</span> Shop Portal
+            <IconStore size={15} />
+            <span>Shop Counter</span>
           </Link>
         )}
 
         {isAdmin && (
           <Link
             to="/admin"
-            className="admin-badge-btn"
+            className={`nav-link ${location.pathname === "/admin" ? "active" : ""}`}
+            style={{ color: "#0f172a", background: "#f1f5f9" }}
           >
-            <span>⚙️</span> Admin
+            <IconSettings size={15} />
+            <span>Admin</span>
           </Link>
         )}
       </nav>
@@ -85,38 +90,37 @@ export default function Navbar() {
               style={{
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#3f3f46",
-                background: "#f4f4f5",
-                padding: "6px 12px",
+                color: "#334155",
+                background: "#f1f5f9",
+                padding: "5px 12px",
                 borderRadius: "20px",
+                border: "1px solid #e2e8f0",
               }}
             >
-              {isAdmin ? "👑 Admin" : `🏪 ${user?.shop?.name || user?.name}`}
+              {isAdmin ? "Admin" : user?.shop?.name || user?.name}
             </span>
             <button
               onClick={handleLogout}
-              className="shop-button secondary-button"
-              style={{ padding: "6px 12px", fontSize: "12px" }}
+              className="btn btn-secondary btn-sm"
               title="Sign Out"
             >
-              Logout
+              <IconLogOut size={14} />
+              <span>Sign out</span>
             </button>
           </div>
         ) : (
           <div style={{ display: "flex", gap: "8px" }}>
             <Link
               to="/login?role=shop"
-              className="nav-link"
-              style={{ fontSize: "13px", color: "#6d4aff" }}
+              className="btn btn-secondary btn-sm"
             >
               Shop Login
             </Link>
             <Link
               to="/login?role=admin"
-              className="admin-badge-btn"
-              style={{ fontSize: "12px", padding: "6px 12px" }}
+              className="btn btn-dark btn-sm"
             >
-              Admin Login
+              Admin
             </Link>
           </div>
         )}

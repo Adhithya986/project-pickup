@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import {
+  IconDownload,
+  IconCheckCircle,
+  IconUser,
+  IconQrCode,
+} from "../components/Icons";
 
 export default function ShopDashboard() {
   const { user, isAdmin } = useAuth();
@@ -37,7 +43,6 @@ export default function ShopDashboard() {
   const [newServicePrice, setNewServicePrice] = useState("");
   const [newServiceDesc, setNewServiceDesc] = useState("");
 
-  // Load all shops for selector
   useEffect(() => {
     fetch("/api/shops")
       .then((res) => res.json())
@@ -49,31 +54,23 @@ export default function ShopDashboard() {
       .catch((err) => console.error(err));
   }, []);
 
-  // Fetch shop details, orders, and stats whenever selectedShopId changes
   const fetchShopData = () => {
     if (!selectedShopId) return;
 
-    // 1. Shop details
     fetch(`/api/shops/${selectedShopId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setCurrentShop(data.data);
-        }
+        if (data.success) setCurrentShop(data.data);
       })
       .catch((err) => console.error(err));
 
-    // 2. Shop stats
     fetch(`/api/stats/shop/${selectedShopId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setStats(data.data);
-        }
+        if (data.success) setStats(data.data);
       })
       .catch((err) => console.error(err));
 
-    // 3. Shop orders
     const params = new URLSearchParams();
     params.set("shopId", String(selectedShopId));
     if (statusFilter !== "all") params.set("status", statusFilter);
@@ -82,9 +79,7 @@ export default function ShopDashboard() {
     fetch(`/api/bookings?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setOrders(data.data);
-        }
+        if (data.success) setOrders(data.data);
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
@@ -111,7 +106,6 @@ export default function ShopDashboard() {
         alert(data.message || "Failed to update status");
       }
     } catch (err) {
-      console.error(err);
       alert("Error updating order status");
     }
   };
@@ -133,10 +127,9 @@ export default function ShopDashboard() {
         setVerifierInput("");
         fetchShopData();
       } else {
-        setVerifierError(data.message || "Invalid QR pass or booking not found");
+        setVerifierError(data.message || "Invalid Booking ID or QR pass");
       }
     } catch (err) {
-      console.error(err);
       setVerifierError("Network error during counter verification");
     }
   };
@@ -149,12 +142,8 @@ export default function ShopDashboard() {
         body: JSON.stringify({ isBookable: currentStatus === 1 ? 0 : 1 }),
       });
       const data = await res.json();
-      if (data.success) {
-        fetchShopData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
+      if (data.success) fetchShopData();
+    } catch (err) {}
   };
 
   const handleAddService = async (e: React.FormEvent) => {
@@ -181,9 +170,7 @@ export default function ShopDashboard() {
         setNewServiceDesc("");
         fetchShopData();
       }
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) {}
   };
 
   const getStatusClass = (status: string) => {
@@ -204,105 +191,111 @@ export default function ShopDashboard() {
       <Navbar />
 
       <main>
-        {/* Operator Header & Shop Switcher */}
-        <section className="shops-header">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px" }}>
-            <Link to="/" className="back-link">
+        {/* Header & Operator Identity */}
+        <div style={{ marginBottom: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px", marginBottom: "12px" }}>
+            <Link to="/" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none" }}>
               ← Storefront View
             </Link>
 
-            {/* Shop Switcher / Identity Badge */}
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               {isAdmin ? (
-                <>
-                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#71717a" }}>
-                    👑 Admin Switch Shop:
-                  </span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "12.5px", fontWeight: 650, color: "#64748b" }}>Admin View:</span>
                   <select
                     value={selectedShopId}
                     onChange={(e) => setSelectedShopId(Number(e.target.value))}
                     style={{
-                      padding: "8px 14px",
-                      borderRadius: "10px",
-                      border: "1px solid #d4d4d8",
-                      fontSize: "14px",
+                      padding: "6px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      fontSize: "13px",
                       fontWeight: 600,
                       background: "white",
-                      cursor: "pointer",
                     }}
                   >
                     {shops.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.icon} {s.name}
+                        {s.name}
                       </option>
                     ))}
                   </select>
-                </>
+                </div>
               ) : (
-                <div
-                  style={{
-                    background: "#f4f4f5",
-                    padding: "6px 14px",
-                    borderRadius: "10px",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "#3f3f46",
-                  }}
-                >
-                  👤 Operator: <strong>{user?.name}</strong> ({user?.email})
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#334155", background: "#f1f5f9", padding: "6px 14px", borderRadius: "20px" }}>
+                  <IconUser size={14} />
+                  <span>Operator: <strong>{user?.name}</strong></span>
                 </div>
               )}
             </div>
           </div>
 
-          <p className="eyebrow">SHOP OPERATOR PORTAL</p>
-          <h1>{currentShop?.name || "Print Shop"} Counter</h1>
-          <p className="hero-description">
-            Live queue manager for this counter. View incoming orders, print customer files, advance statuses, and verify QR passes.
-          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <h1 style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "-0.02em" }}>
+                {currentShop?.name || "Shop"} Counter
+              </h1>
+              <p style={{ fontSize: "14px", color: "#64748b", margin: "2px 0 0" }}>
+                📍 {currentShop?.address} • 📞 {currentShop?.phone}
+              </p>
+            </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-              fontSize: "13px",
-              color: "#52525b",
-              background: "#f4f4f5",
-              padding: "10px 16px",
-              borderRadius: "10px",
-              maxWidth: "700px",
-            }}
-          >
-            <span>📍 {currentShop?.address}</span>
-            <span>📞 {currentShop?.phone}</span>
-            <span>🕒 {currentShop?.openHours}</span>
-            <span style={{ color: "#16a34a", fontWeight: 700 }}>🟢 Accepting Pre-Orders</span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <span className="status-pill status-ready" style={{ fontSize: "12px" }}>
+                <IconCheckCircle size={13} />
+                <span>Open & Receiving Orders</span>
+              </span>
+            </div>
           </div>
-        </section>
+        </div>
 
-        {/* Counter QR Scanner / Verifier */}
-        <section className="verifier-card">
-          <h3>⚡ Counter Pickup QR Verifier</h3>
-          <p>
-            When a student arrives at your counter, scan or enter their Booking ID / QR pass to verify and complete handoff.
+        {/* Counter Scanner Card */}
+        <section
+          style={{
+            background: "#0f172a",
+            color: "white",
+            padding: "22px 26px",
+            borderRadius: "16px",
+            marginBottom: "28px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <IconQrCode size={18} color="#38bdf8" />
+            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>Counter Pickup Verifier</h3>
+          </div>
+          <p style={{ fontSize: "13px", color: "#94a3b8", margin: "0 0 16px" }}>
+            When a student arrives at the pickup counter, enter or scan their Booking ID to complete pickup.
           </p>
 
-          <form onSubmit={handleVerifyQR} className="verifier-form">
+          <form onSubmit={handleVerifyQR} style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <input
               type="text"
-              placeholder="Enter Booking ID (e.g. LP-20261012-001 or QR pass)..."
+              placeholder="Scan or enter Booking ID (e.g. LP-20261012-001)..."
               value={verifierInput}
               onChange={(e) => setVerifierInput(e.target.value)}
-              className="verifier-input"
+              style={{
+                flex: 1,
+                minWidth: "240px",
+                padding: "10px 14px",
+                borderRadius: "8px",
+                border: "1px solid #334155",
+                background: "#1e293b",
+                color: "white",
+                fontSize: "14px",
+                outline: "none",
+              }}
             />
-            <button type="submit" className="verifier-btn">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ background: "#2563eb" }}
+            >
               Verify & Complete Pickup
             </button>
           </form>
 
           {verifierError && (
-            <p style={{ color: "#f87171", fontSize: "13px", marginTop: "10px", fontWeight: 600 }}>
+            <p style={{ color: "#f87171", fontSize: "13px", fontWeight: 600, marginTop: "10px" }}>
               ⚠️ {verifierError}
             </p>
           )}
@@ -310,34 +303,29 @@ export default function ShopDashboard() {
           {verifierResult && (
             <div
               style={{
-                marginTop: "16px",
-                padding: "16px",
-                background: "#064e3b",
-                borderRadius: "12px",
+                marginTop: "14px",
+                padding: "14px 18px",
+                background: "rgba(16, 185, 129, 0.15)",
+                border: "1px solid #10b981",
+                borderRadius: "10px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
               }}
             >
               <div>
-                <strong style={{ fontSize: "15px", color: "#6ee7b7" }}>
-                  ✅ Pickup Confirmed for Order {verifierResult.id}
+                <strong style={{ fontSize: "14px", color: "#6ee7b7" }}>
+                  ✓ Pickup Confirmed for Order {verifierResult.id}
                 </strong>
-                <p style={{ margin: "4px 0 0", color: "#d1fae5", fontSize: "13px" }}>
-                  Customer: <strong>{verifierResult.customerName}</strong> ({verifierResult.customerPhone}) • Total: ₹{verifierResult.totalPrice}
+                <p style={{ margin: "2px 0 0", color: "#d1fae5", fontSize: "13px" }}>
+                  Customer: <strong>{verifierResult.customerName}</strong> ({verifierResult.customerPhone}) • ₹{verifierResult.totalPrice}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setVerifierResult(null)}
-                style={{
-                  background: "rgba(255,255,255,0.2)",
-                  color: "white",
-                  border: "none",
-                  padding: "6px 12px",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                }}
+                className="btn btn-secondary btn-sm"
+                style={{ padding: "4px 10px" }}
               >
                 Dismiss
               </button>
@@ -345,208 +333,188 @@ export default function ShopDashboard() {
           )}
         </section>
 
-        {/* Shop Specific KPIs */}
-        <section className="kpi-grid">
-          <div className="kpi-card">
-            <div className="kpi-label">Total Shop Orders</div>
-            <div className="kpi-value">{stats.totalOrders}</div>
+        {/* Shop KPIs */}
+        <div className="kpi-container">
+          <div className="kpi-box">
+            <div className="label">Total Shop Orders</div>
+            <div className="val">{stats.totalOrders}</div>
           </div>
-
-          <div className="kpi-card" style={{ borderColor: "#fde68a" }}>
-            <div className="kpi-label" style={{ color: "#d97706" }}>
-              ⏳ Pending Print
-            </div>
-            <div className="kpi-value" style={{ color: "#b45309" }}>
-              {stats.pendingOrders}
-            </div>
+          <div className="kpi-box" style={{ borderLeft: "3px solid #f59e0b" }}>
+            <div className="label" style={{ color: "#d97706" }}>Pending Print</div>
+            <div className="val" style={{ color: "#b45309" }}>{stats.pendingOrders}</div>
           </div>
-
-          <div className="kpi-card" style={{ borderColor: "#bae6fd" }}>
-            <div className="kpi-label" style={{ color: "#0284c7" }}>
-              🖨️ Printing Now
-            </div>
-            <div className="kpi-value" style={{ color: "#0369a1" }}>
-              {stats.printingOrders}
-            </div>
+          <div className="kpi-box" style={{ borderLeft: "3px solid #2563eb" }}>
+            <div className="label" style={{ color: "#2563eb" }}>Printing Now</div>
+            <div className="val" style={{ color: "#1d4ed8" }}>{stats.printingOrders}</div>
           </div>
-
-          <div className="kpi-card" style={{ borderColor: "#bbf7d0" }}>
-            <div className="kpi-label" style={{ color: "#16a34a" }}>
-              ✅ Ready for Pickup
-            </div>
-            <div className="kpi-value" style={{ color: "#15803d" }}>
-              {stats.readyOrders}
-            </div>
+          <div className="kpi-box" style={{ borderLeft: "3px solid #10b981" }}>
+            <div className="label" style={{ color: "#059669" }}>Ready for Pickup</div>
+            <div className="val" style={{ color: "#047857" }}>{stats.readyOrders}</div>
           </div>
-
-          <div className="kpi-card">
-            <div className="kpi-label">Shop Revenue</div>
-            <div className="kpi-value">₹{stats.totalRevenue}</div>
+          <div className="kpi-box">
+            <div className="label">Today's Revenue</div>
+            <div className="val">₹{stats.totalRevenue}</div>
           </div>
-        </section>
+        </div>
 
-        {/* Navigation Tabs */}
-        <div style={{ display: "flex", gap: "14px", borderBottom: "1px solid #e4e4e7", marginBottom: "20px" }}>
+        {/* Section Tabs */}
+        <div style={{ display: "flex", gap: "10px", borderBottom: "1px solid #e2e8f0", marginBottom: "20px" }}>
           <button
             className={`nav-link ${activeTab === "queue" ? "active" : ""}`}
-            style={{ fontSize: "16px", padding: "10px 18px", borderBottom: activeTab === "queue" ? "2px solid #6d4aff" : "none" }}
+            style={{ fontSize: "14.5px", padding: "8px 16px", borderRadius: "6px" }}
             onClick={() => setActiveTab("queue")}
           >
-            🖨️ Print Order Queue ({orders.length})
+            Order Queue ({orders.length})
           </button>
           <button
             className={`nav-link ${activeTab === "services" ? "active" : ""}`}
-            style={{ fontSize: "16px", padding: "10px 18px", borderBottom: activeTab === "services" ? "2px solid #6d4aff" : "none" }}
+            style={{ fontSize: "14.5px", padding: "8px 16px", borderRadius: "6px" }}
             onClick={() => setActiveTab("services")}
           >
-            ⚙️ Services & Pricing ({currentShop?.services?.length || 0})
+            Services & Rates ({currentShop?.services?.length || 0})
           </button>
         </div>
 
         {/* TAB 1: Order Queue */}
         {activeTab === "queue" && (
-          <section className="section" style={{ marginTop: "10px" }}>
-            <div className="section-header" style={{ flexWrap: "wrap", gap: "10px" }}>
-              <h2>Incoming Orders for {currentShop?.name}</h2>
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
+              <div className="filter-tabs" style={{ marginBottom: 0 }}>
+                {[
+                  { id: "all", label: "All Queue" },
+                  { id: "pending", label: "Pending" },
+                  { id: "printing", label: "Printing" },
+                  { id: "ready", label: "Ready" },
+                  { id: "completed", label: "Completed" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    className={`filter-tab ${statusFilter === tab.id ? "active" : ""}`}
+                    onClick={() => setStatusFilter(tab.id)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", gap: "8px" }}>
                 <input
                   type="text"
                   placeholder="Search customer, ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
-                    padding: "8px 12px",
+                    padding: "6px 12px",
                     borderRadius: "8px",
-                    border: "1px solid #e4e4e7",
+                    border: "1px solid #cbd5e1",
                     fontSize: "13px",
                   }}
                 />
                 <button
                   onClick={fetchShopData}
-                  className="shop-button secondary-button"
-                  style={{ fontSize: "13px", padding: "8px 14px" }}
+                  className="btn btn-secondary btn-sm"
                 >
-                  🔄 Refresh
+                  Refresh
                 </button>
               </div>
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="filter-tabs">
-              {[
-                { id: "all", label: "All Orders" },
-                { id: "pending", label: "⏳ Pending" },
-                { id: "printing", label: "🖨️ Printing" },
-                { id: "ready", label: "✅ Ready" },
-                { id: "completed", label: "📦 Completed" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  className={`filter-tab ${statusFilter === tab.id ? "active" : ""}`}
-                  onClick={() => setStatusFilter(tab.id)}
-                >
-                  {tab.label}
-                </button>
-              ))}
             </div>
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: "40px", color: "#71717a" }}>
-                Loading orders...
-              </div>
+              <div style={{ padding: "60px", textAlign: "center", color: "#64748b" }}>Loading queue orders...</div>
             ) : orders.length === 0 ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "50px 20px",
-                  background: "white",
-                  borderRadius: "16px",
-                  border: "1px solid #e8e8ed",
-                }}
-              >
-                <h3>No orders in this queue</h3>
-                <p style={{ color: "#71717a" }}>There are no active orders for this filter right now.</p>
+              <div style={{ padding: "50px", textAlign: "center", background: "white", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "4px" }}>Queue is clear</h3>
+                <p style={{ fontSize: "13px", color: "#64748b" }}>No print jobs waiting under this filter.</p>
               </div>
             ) : (
-              <div className="orders-grid">
-                {orders.map((order) => (
-                  <div className="order-card" key={order.id}>
-                    <div className="order-card-info">
-                      <div className="order-card-icon">🖨️</div>
-                      <div className="order-card-details">
-                        <h4>
-                          {order.id}
-                          <span className={`status-pill ${getStatusClass(order.status)}`}>
-                            ● {order.status}
-                          </span>
-                        </h4>
-                        <p>
-                          Customer: <strong>{order.customerName}</strong> (📞 {order.customerPhone})
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {orders.map((o) => (
+                  <div
+                    key={o.id}
+                    style={{
+                      background: "white",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "12px",
+                      padding: "16px 20px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: "14px",
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                        <strong style={{ fontSize: "15px" }}>{o.id}</strong>
+                        <span className={`status-pill ${getStatusClass(o.status)}`}>{o.status}</span>
+                        <span style={{ fontSize: "13px", fontWeight: 650, color: "#334155" }}>
+                          {o.customerName} ({o.customerPhone})
+                        </span>
+                      </div>
+
+                      <p style={{ fontSize: "13.5px", color: "#475569", margin: "2px 0 4px" }}>
+                        📄 <strong>{o.documentName}</strong> ({o.copies} copies • {o.paperSize} • {o.colour === "colour" ? "Color" : "B&W"} • {o.sides}-sided
+                        {o.binding ? " • Spiral Binding" : ""}
+                        {o.lamination ? " • Lamination" : ""})
+                      </p>
+
+                      {o.instructions && (
+                        <p style={{ fontSize: "12px", color: "#2563eb", margin: "2px 0 4px", fontStyle: "italic" }}>
+                          Notes: "{o.instructions}"
                         </p>
-                        <p style={{ margin: "2px 0 6px", fontSize: "13px", color: "#3f3f46" }}>
-                          📄 <strong>{order.documentName}</strong> ({order.copies} copies • {order.paperSize} •{" "}
-                          {order.colour === "colour" ? "Colour" : "B&W"} • {order.sides}-sided
-                          {order.binding ? " • Spiral Binding" : ""}
-                          {order.lamination ? " • Lamination" : ""})
-                        </p>
-                        {order.instructions && (
-                          <p style={{ margin: "2px 0 6px", fontSize: "12px", color: "#6d4aff", fontStyle: "italic" }}>
-                            Customer Instructions: "{order.instructions}"
-                          </p>
-                        )}
-                        <div className="order-meta-chips">
-                          <span>🕒 Scheduled: {order.pickupDate}, {order.pickupSlot}</span>
-                          <span>💰 ₹{order.totalPrice}</span>
-                        </div>
+                      )}
+
+                      <div style={{ display: "flex", gap: "14px", fontSize: "12.5px", color: "#64748b" }}>
+                        <span>🕒 Pickup: {o.pickupDate}, {o.pickupSlot}</span>
+                        <strong style={{ color: "#0f172a" }}>₹{o.totalPrice}</strong>
                       </div>
                     </div>
 
-                    <div className="order-actions" style={{ flexWrap: "wrap" }}>
-                      {order.documentPath && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                      {o.documentPath && (
                         <a
-                          href={order.documentPath}
+                          href={o.documentPath}
                           target="_blank"
                           rel="noreferrer"
-                          className="shop-button secondary-button"
-                          style={{ padding: "8px 12px", fontSize: "12px", textDecoration: "none" }}
-                          title="Open uploaded file to print"
+                          className="btn btn-secondary btn-sm"
+                          title="Open document file for physical printing"
                         >
-                          📥 Print File
+                          <IconDownload size={14} />
+                          <span>Print File</span>
                         </a>
                       )}
 
-                      {order.status === "pending" && (
+                      {o.status === "pending" && (
                         <button
-                          className="shop-button"
-                          style={{ padding: "8px 12px", fontSize: "12px", background: "#0284c7" }}
-                          onClick={() => handleUpdateStatus(order.id, "printing")}
+                          className="btn btn-primary btn-sm"
+                          style={{ background: "#0284c7" }}
+                          onClick={() => handleUpdateStatus(o.id, "printing")}
                         >
                           Start Printing →
                         </button>
                       )}
 
-                      {order.status === "printing" && (
+                      {o.status === "printing" && (
                         <button
-                          className="shop-button"
-                          style={{ padding: "8px 12px", fontSize: "12px", background: "#16a34a" }}
-                          onClick={() => handleUpdateStatus(order.id, "ready")}
+                          className="btn btn-primary btn-sm"
+                          style={{ background: "#059669" }}
+                          onClick={() => handleUpdateStatus(o.id, "ready")}
                         >
-                          Mark Ready →
+                          Mark Ready ✓
                         </button>
                       )}
 
-                      {order.status === "ready" && (
+                      {o.status === "ready" && (
                         <button
-                          className="shop-button"
-                          style={{ padding: "8px 12px", fontSize: "12px", background: "#18181b" }}
-                          onClick={() => handleUpdateStatus(order.id, "completed")}
+                          className="btn btn-dark btn-sm"
+                          onClick={() => handleUpdateStatus(o.id, "completed")}
                         >
-                          Complete Handover ✓
+                          Complete Handover
                         </button>
                       )}
 
-                      {order.status === "completed" && (
-                        <span style={{ fontSize: "12px", color: "#71717a", fontWeight: 600 }}>
+                      {o.status === "completed" && (
+                        <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>
                           Handed Over ✓
                         </span>
                       )}
@@ -555,20 +523,19 @@ export default function ShopDashboard() {
                 ))}
               </div>
             )}
-          </section>
+          </div>
         )}
 
-        {/* TAB 2: Services & Pricing Manager */}
+        {/* TAB 2: Services & Pricing */}
         {activeTab === "services" && (
-          <section className="section" style={{ marginTop: "10px" }}>
-            <div className="section-header">
-              <h2>Services Offered by {currentShop?.name}</h2>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 700 }}>Menu & Service Offerings</h2>
               <button
-                className="shop-button"
+                className="btn btn-primary btn-sm"
                 onClick={() => setShowAddService(!showAddService)}
-                style={{ fontSize: "13px" }}
               >
-                + Add New Service
+                + Add Service
               </button>
             </div>
 
@@ -578,14 +545,14 @@ export default function ShopDashboard() {
                 style={{
                   background: "white",
                   padding: "20px",
-                  borderRadius: "14px",
-                  border: "1px solid #e8e8ed",
-                  marginBottom: "20px",
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  marginBottom: "18px",
                 }}
               >
-                <h3 style={{ margin: "0 0 14px", fontSize: "16px" }}>Add Service to Shop Menu</h3>
+                <h3 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "12px" }}>Add Service to Menu</h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-                  <div className="form-input-group">
+                  <div className="form-group">
                     <label>Service Name *</label>
                     <input
                       type="text"
@@ -595,7 +562,7 @@ export default function ShopDashboard() {
                       required
                     />
                   </div>
-                  <div className="form-input-group">
+                  <div className="form-group">
                     <label>Price Display *</label>
                     <input
                       type="text"
@@ -605,23 +572,24 @@ export default function ShopDashboard() {
                       required
                     />
                   </div>
-                  <div className="form-input-group">
+                  <div className="form-group">
                     <label>Description</label>
                     <input
                       type="text"
-                      placeholder="Brief details about service"
+                      placeholder="Details about print or binding"
                       value={newServiceDesc}
                       onChange={(e) => setNewServiceDesc(e.target.value)}
                     />
                   </div>
                 </div>
-                <div style={{ marginTop: "16px", display: "flex", gap: "10px" }}>
-                  <button type="submit" className="shop-button">
+
+                <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                  <button type="submit" className="btn btn-primary btn-sm">
                     Save Service
                   </button>
                   <button
                     type="button"
-                    className="shop-button secondary-button"
+                    className="btn btn-secondary btn-sm"
                     onClick={() => setShowAddService(false)}
                   >
                     Cancel
@@ -630,29 +598,37 @@ export default function ShopDashboard() {
               </form>
             )}
 
-            <div className="services-list">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "14px" }}>
               {currentShop?.services?.map((svc: any) => (
-                <div className="service-card" key={svc.id}>
-                  <div className="service-icon">{svc.icon || "📄"}</div>
-                  <div className="service-info">
-                    <h3>{svc.name}</h3>
-                    <p>{svc.description}</p>
-                    <strong>{svc.priceText}</strong>
+                <div
+                  key={svc.id}
+                  style={{
+                    background: "white",
+                    padding: "16px 20px",
+                    borderRadius: "12px",
+                    border: "1px solid #e2e8f0",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <h4 style={{ fontSize: "15px", fontWeight: 700, margin: 0 }}>{svc.name}</h4>
+                    <p style={{ fontSize: "12.5px", color: "#64748b", margin: "2px 0" }}>{svc.description}</p>
+                    <strong style={{ fontSize: "13px", color: "#2563eb" }}>{svc.priceText}</strong>
                   </div>
 
-                  <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                    <button
-                      className={`shop-button ${svc.isBookable ? "" : "secondary-button"}`}
-                      style={{ fontSize: "13px", padding: "8px 14px" }}
-                      onClick={() => handleToggleService(svc.id, svc.isBookable)}
-                    >
-                      {svc.isBookable ? "🟢 Online Active" : "⚪ Walk-in Only"}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleToggleService(svc.id, svc.isBookable)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: "12px" }}
+                  >
+                    {svc.isBookable ? "🟢 Active Online" : "⚪ Walk-in Only"}
+                  </button>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
         )}
       </main>
     </div>

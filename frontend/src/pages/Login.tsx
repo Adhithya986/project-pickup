@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import { IconStore, IconSettings } from "../components/Icons";
 
 export default function Login() {
   const [searchParams] = useSearchParams();
@@ -67,7 +68,7 @@ export default function Login() {
       setLoading(false);
 
       if (data.success && data.token) {
-        setRegSuccess("Shop registered successfully! Logging you in...");
+        setRegSuccess("Shop registered successfully! Signing in...");
         await login(regEmail, regPassword);
         setTimeout(() => navigate("/shop-dashboard"), 1000);
       } else {
@@ -90,90 +91,132 @@ export default function Login() {
     <div className="app">
       <Navbar />
 
-      <main style={{ maxWidth: "520px", marginTop: "30px" }}>
+      <main style={{ maxWidth: "460px", marginTop: "24px" }}>
         <div
           style={{
             background: "white",
             padding: "36px 32px",
-            borderRadius: "20px",
-            border: "1px solid #e8e8ed",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.04)",
-            textAlign: "center",
+            borderRadius: "16px",
+            border: "1px solid #e2e8f0",
+            boxShadow: "var(--shadow-sm)",
           }}
         >
-          <div
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "16px",
-              background: "#f0ebff",
-              display: "grid",
-              placeItems: "center",
-              fontSize: "26px",
-              margin: "0 auto 16px",
-            }}
-          >
-            {roleTab === "admin" ? "⚙️" : "🏪"}
+          <div style={{ textAlign: "center", marginBottom: "24px" }}>
+            <div
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "12px",
+                background: "#eff6ff",
+                color: "#2563eb",
+                display: "grid",
+                placeItems: "center",
+                margin: "0 auto 12px",
+              }}
+            >
+              {roleTab === "admin" ? <IconSettings size={22} /> : <IconStore size={22} />}
+            </div>
+
+            <h1 style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: "4px" }}>
+              {roleTab === "admin"
+                ? "Platform Admin Sign In"
+                : roleTab === "register"
+                ? "Register Print Shop"
+                : "Shop Operator Sign In"}
+            </h1>
+            <p style={{ fontSize: "13.5px", color: "#64748b", margin: 0 }}>
+              {roleTab === "admin"
+                ? "Enter admin credentials to manage network"
+                : roleTab === "register"
+                ? "Join the network to receive online pre-orders"
+                : "Sign in to access your counter pickup queue"}
+            </p>
           </div>
 
-          <h1 style={{ fontSize: "24px", margin: "0 0 8px" }}>
-            {roleTab === "admin" ? "Platform Admin Login" : roleTab === "register" ? "Register Your Print Shop" : "Shop Operator Login"}
-          </h1>
-          <p style={{ color: "#71717a", fontSize: "14px", margin: "0 0 24px" }}>
-            {roleTab === "admin"
-              ? "Sign in to access platform-wide settings and logs"
-              : roleTab === "register"
-              ? "Join the campus network as an official print vendor"
-              : "Sign in to access your print queue and counter verifier"}
-          </p>
-
-          {/* Role Tabs */}
-          <div className="filter-tabs" style={{ justifyContent: "center", marginBottom: "20px" }}>
+          {/* Segmented Switcher */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: "4px",
+              background: "#f1f5f9",
+              padding: "4px",
+              borderRadius: "10px",
+              marginBottom: "20px",
+            }}
+          >
             <button
               type="button"
-              className={`filter-tab ${roleTab === "shop" ? "active" : ""}`}
               onClick={() => {
                 setRoleTab("shop");
                 setErrorMsg("");
               }}
+              style={{
+                padding: "8px 10px",
+                borderRadius: "8px",
+                fontSize: "12.5px",
+                fontWeight: 650,
+                background: roleTab === "shop" ? "white" : "transparent",
+                color: roleTab === "shop" ? "#0f172a" : "#64748b",
+                boxShadow: roleTab === "shop" ? "var(--shadow-sm)" : "none",
+                cursor: "pointer",
+              }}
             >
-              🏪 Shop Operator
+              Shop
             </button>
             <button
               type="button"
-              className={`filter-tab ${roleTab === "admin" ? "active" : ""}`}
               onClick={() => {
                 setRoleTab("admin");
                 setErrorMsg("");
               }}
+              style={{
+                padding: "8px 10px",
+                borderRadius: "8px",
+                fontSize: "12.5px",
+                fontWeight: 650,
+                background: roleTab === "admin" ? "white" : "transparent",
+                color: roleTab === "admin" ? "#0f172a" : "#64748b",
+                boxShadow: roleTab === "admin" ? "var(--shadow-sm)" : "none",
+                cursor: "pointer",
+              }}
             >
-              ⚙️ Platform Admin
+              Admin
             </button>
             <button
               type="button"
-              className={`filter-tab ${roleTab === "register" ? "active" : ""}`}
               onClick={() => {
                 setRoleTab("register");
                 setErrorMsg("");
               }}
+              style={{
+                padding: "8px 10px",
+                borderRadius: "8px",
+                fontSize: "12.5px",
+                fontWeight: 650,
+                background: roleTab === "register" ? "white" : "transparent",
+                color: roleTab === "register" ? "#0f172a" : "#64748b",
+                boxShadow: roleTab === "register" ? "var(--shadow-sm)" : "none",
+                cursor: "pointer",
+              }}
             >
-              + Register Shop
+              Register
             </button>
           </div>
 
-          {/* Quick autofill demo pills */}
+          {/* Quick Demo Autofill Pills */}
           {roleTab !== "register" && (
             <div
               style={{
-                background: "#f4f4f5",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
                 padding: "12px 14px",
-                borderRadius: "12px",
+                borderRadius: "10px",
                 marginBottom: "20px",
-                textAlign: "left",
               }}
             >
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#71717a", marginBottom: "8px", textTransform: "uppercase" }}>
-                ⚡ Quick 1-Click Demo Logins:
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px" }}>
+                1-Click Demo Fill:
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                 {roleTab === "admin" ? (
@@ -182,7 +225,7 @@ export default function Login() {
                     onClick={() => fillCredentials("admin@localpickup.com", "admin123", "admin")}
                     style={{
                       background: "white",
-                      border: "1px solid #d4d4d8",
+                      border: "1px solid #cbd5e1",
                       borderRadius: "6px",
                       padding: "4px 8px",
                       fontSize: "12px",
@@ -190,7 +233,7 @@ export default function Login() {
                       cursor: "pointer",
                     }}
                   >
-                    👑 System Admin
+                    System Admin
                   </button>
                 ) : (
                   <>
@@ -199,7 +242,7 @@ export default function Login() {
                       onClick={() => fillCredentials("abc@prints.com", "shop123", "shop")}
                       style={{
                         background: "white",
-                        border: "1px solid #d4d4d8",
+                        border: "1px solid #cbd5e1",
                         borderRadius: "6px",
                         padding: "4px 8px",
                         fontSize: "12px",
@@ -207,14 +250,14 @@ export default function Login() {
                         cursor: "pointer",
                       }}
                     >
-                      🖨️ ABC Digital Prints
+                      ABC Digital Prints
                     </button>
                     <button
                       type="button"
                       onClick={() => fillCredentials("quick@print.com", "shop123", "shop")}
                       style={{
                         background: "white",
-                        border: "1px solid #d4d4d8",
+                        border: "1px solid #cbd5e1",
                         borderRadius: "6px",
                         padding: "4px 8px",
                         fontSize: "12px",
@@ -222,22 +265,7 @@ export default function Login() {
                         cursor: "pointer",
                       }}
                     >
-                      ⚡ Quick Print Center
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => fillCredentials("city@copy.com", "shop123", "shop")}
-                      style={{
-                        background: "white",
-                        border: "1px solid #d4d4d8",
-                        borderRadius: "6px",
-                        padding: "4px 8px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                      }}
-                    >
-                      📚 City Copy Hub
+                      Quick Print Center
                     </button>
                   </>
                 )}
@@ -248,41 +276,39 @@ export default function Login() {
           {errorMsg && (
             <div
               style={{
-                background: "#fee2e2",
-                color: "#b91c1c",
+                background: "#fef2f2",
+                color: "#dc2626",
                 padding: "10px 14px",
-                borderRadius: "10px",
+                borderRadius: "8px",
                 fontSize: "13px",
                 fontWeight: 600,
                 marginBottom: "16px",
-                textAlign: "left",
               }}
             >
-              ⚠️ {errorMsg}
+              {errorMsg}
             </div>
           )}
 
           {regSuccess && (
             <div
               style={{
-                background: "#dcfce7",
-                color: "#15803d",
+                background: "#ecfdf5",
+                color: "#059669",
                 padding: "10px 14px",
-                borderRadius: "10px",
+                borderRadius: "8px",
                 fontSize: "13px",
                 fontWeight: 600,
                 marginBottom: "16px",
-                textAlign: "left",
               }}
             >
-              ✓ {regSuccess}
+              {regSuccess}
             </div>
           )}
 
-          {/* LOGIN FORM */}
+          {/* SIGN IN FORM */}
           {roleTab !== "register" ? (
-            <form onSubmit={handleLoginSubmit} style={{ textAlign: "left" }}>
-              <div className="form-input-group">
+            <form onSubmit={handleLoginSubmit}>
+              <div className="form-group">
                 <label>Email Address</label>
                 <input
                   type="email"
@@ -293,11 +319,11 @@ export default function Login() {
                 />
               </div>
 
-              <div className="form-input-group">
+              <div className="form-group">
                 <label>Password</label>
                 <input
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -306,76 +332,76 @@ export default function Login() {
 
               <button
                 type="submit"
-                className="shop-button"
-                style={{ width: "100%", marginTop: "24px", padding: "13px", fontSize: "15px" }}
+                className="btn btn-primary"
+                style={{ width: "100%", padding: "11px", marginTop: "12px" }}
                 disabled={loading}
               >
-                {loading ? "Signing in..." : `Sign In as ${roleTab === "admin" ? "Admin" : "Shop Operator"} →`}
+                {loading ? "Signing in..." : `Sign In as ${roleTab === "admin" ? "Admin" : "Operator"}`}
               </button>
             </form>
           ) : (
             /* REGISTER SHOP FORM */
-            <form onSubmit={handleRegisterShop} style={{ textAlign: "left" }}>
-              <div className="form-input-group">
-                <label>Print Shop Name *</label>
+            <form onSubmit={handleRegisterShop}>
+              <div className="form-group">
+                <label>Shop / Business Name *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Express Print & Xerox"
+                  placeholder="e.g. Campus Digital Prints"
                   value={regShopName}
                   onChange={(e) => setRegShopName(e.target.value)}
                   required
                 />
               </div>
 
-              <div className="form-input-group">
-                <label>Operator / Owner Name *</label>
+              <div className="form-group">
+                <label>Operator Name *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Vikram Singh"
+                  placeholder="e.g. Vikram Sharma"
                   value={regOwnerName}
                   onChange={(e) => setRegOwnerName(e.target.value)}
                   required
                 />
               </div>
 
-              <div className="form-input-group">
+              <div className="form-group">
                 <label>Operator Email *</label>
                 <input
                   type="email"
-                  placeholder="owner@example.com"
+                  placeholder="operator@example.com"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   required
                 />
               </div>
 
-              <div className="form-input-group">
+              <div className="form-group">
                 <label>Password *</label>
                 <input
                   type="password"
-                  placeholder="Choose a strong password"
+                  placeholder="Create password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   required
                 />
               </div>
 
-              <div className="form-input-group">
+              <div className="form-group">
                 <label>Phone Number *</label>
                 <input
                   type="tel"
-                  placeholder="e.g. 9876543210"
+                  placeholder="+91 98000 00000"
                   value={regPhone}
                   onChange={(e) => setRegPhone(e.target.value)}
                   required
                 />
               </div>
 
-              <div className="form-input-group">
+              <div className="form-group">
                 <label>Shop Location / Address *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Student Center, North Gate"
+                  placeholder="e.g. Science Block, Ground Floor"
                   value={regAddress}
                   onChange={(e) => setRegAddress(e.target.value)}
                   required
@@ -384,18 +410,18 @@ export default function Login() {
 
               <button
                 type="submit"
-                className="shop-button"
-                style={{ width: "100%", marginTop: "24px", padding: "13px", fontSize: "15px" }}
+                className="btn btn-primary"
+                style={{ width: "100%", padding: "11px", marginTop: "12px" }}
                 disabled={loading}
               >
-                {loading ? "Registering..." : "Create Shop & Operator Account →"}
+                {loading ? "Creating..." : "Create Vendor Account"}
               </button>
             </form>
           )}
 
-          <div style={{ marginTop: "24px", fontSize: "13px", color: "#71717a" }}>
-            <Link to="/" style={{ color: "#6d4aff", textDecoration: "none", fontWeight: 600 }}>
-              ← Return to LocalPickup Storefront
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <Link to="/" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none" }}>
+              ← Return to storefront
             </Link>
           </div>
         </div>

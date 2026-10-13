@@ -1,6 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import Navbar from "../components/Navbar";
+import {
+  IconCheckCircle,
+  IconClock,
+  IconDownload,
+  IconArrowRight,
+} from "../components/Icons";
 
 export default function BookingSuccess() {
   const location = useLocation();
@@ -13,6 +19,8 @@ export default function BookingSuccess() {
     pickupSlot: "8:30 PM",
     pickupDate: "Today",
     copies: 1,
+    paperSize: "A4",
+    colour: "bw",
     totalPrice: 20,
     status: "pending",
     qrToken: "VERIFY-LP-DEMO",
@@ -21,129 +29,143 @@ export default function BookingSuccess() {
   const bookingId = order.id || "LP-DEMO";
   const qrValue = order.qrToken || bookingId;
 
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case "printing":
-        return "status-printing";
-      case "ready":
-        return "status-ready";
-      case "completed":
-        return "status-completed";
-      default:
-        return "status-pending";
-    }
-  };
-
   return (
     <div className="app">
       <Navbar />
 
-      <main>
-        <section className="success-page">
-          <div className="success-icon">✓</div>
-
-          <p className="eyebrow">ORDER CONFIRMED & QUEUED</p>
-          <h1>Your order is booked!</h1>
-          <p className="hero-description">
-            Your print request has been saved in the database and sent to{" "}
-            <strong>{order.shopName || "ABC Digital Prints"}</strong>.
+      <main style={{ maxWidth: "600px" }}>
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+          <div
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "50%",
+              background: "#ecfdf5",
+              color: "#059669",
+              display: "grid",
+              placeItems: "center",
+              margin: "0 auto 14px",
+            }}
+          >
+            <IconCheckCircle size={24} />
+          </div>
+          <h1 style={{ fontSize: "26px", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: "4px" }}>
+            Order Confirmed & Queued
+          </h1>
+          <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
+            Your print job has been sent to <strong>{order.shopName}</strong>.
           </p>
+        </div>
 
-          <div className="booking-card">
-            <div className="booking-shop">
-              <div className="shop-icon">🖨️</div>
+        {/* Digital Pickup Pass Card */}
+        <div className="digital-ticket">
+          <div className="ticket-header">
+            <div>
+              <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: "#94a3b8", textTransform: "uppercase" }}>
+                PICKUP PASS
+              </span>
+              <h2 style={{ fontSize: "18px", fontWeight: 700, margin: "2px 0 0" }}>
+                {order.shopName}
+              </h2>
+            </div>
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: "20px",
+                background: "rgba(255,255,255,0.15)",
+                color: "white",
+              }}
+            >
+              {order.status || "Pending"}
+            </span>
+          </div>
+
+          <div className="ticket-body">
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "18px" }}>
               <div>
-                <strong>{order.shopName || "ABC Digital Prints"}</strong>
-                <p>Printing & Document Pickup Counter</p>
+                <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>BOOKING ID</span>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: "#0f172a", letterSpacing: "0.03em" }}>{bookingId}</div>
               </div>
-
-              <div style={{ marginLeft: "auto" }}>
-                <span className={`status-pill ${getStatusClass(order.status)}`}>
-                  ● {order.status || "pending"}
-                </span>
+              <div style={{ textAlign: "right" }}>
+                <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>SCHEDULED TIME</span>
+                <div style={{ fontSize: "16px", fontWeight: 700, color: "#2563eb", display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end" }}>
+                  <IconClock size={15} />
+                  <span>{order.pickupDate || "Today"}, {order.pickupSlot}</span>
+                </div>
               </div>
             </div>
 
-            <div className="booking-id">
-              <span>OFFICIAL BOOKING ID</span>
-              <strong>{bookingId}</strong>
-            </div>
-
-            <div className="booking-details">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", background: "#f8fafc", padding: "16px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
               <div>
-                <span>Customer</span>
-                <strong>{order.customerName}</strong>
+                <span style={{ fontSize: "11.5px", color: "#64748b" }}>Customer</span>
+                <div style={{ fontSize: "13.5px", fontWeight: 700 }}>{order.customerName}</div>
+                <div style={{ fontSize: "12px", color: "#64748b" }}>{order.customerPhone}</div>
               </div>
-
               <div>
-                <span>Phone</span>
-                <strong>{order.customerPhone}</strong>
-              </div>
-
-              <div>
-                <span>Document</span>
-                <strong>{order.documentName}</strong>
-              </div>
-
-              <div>
-                <span>Scheduled Pickup</span>
-                <strong style={{ color: "#6d4aff" }}>
-                  {order.pickupDate || "Today"}, {order.pickupSlot}
-                </strong>
-              </div>
-
-              <div>
-                <span>Copies & Specs</span>
-                <strong>
-                  {order.copies || 1} copy • {order.paperSize || "A4"} ({order.colour === "colour" ? "Colour" : "B&W"})
-                </strong>
-              </div>
-
-              <div>
-                <span>Total Amount</span>
-                <strong>₹{order.totalPrice || order.total || 0}</strong>
+                <span style={{ fontSize: "11.5px", color: "#64748b" }}>Document Specs</span>
+                <div style={{ fontSize: "13.5px", fontWeight: 700 }}>
+                  {order.copies || 1}× {order.paperSize || "A4"} ({order.colour === "colour" ? "Color" : "B&W"})
+                </div>
+                <div style={{ fontSize: "12px", color: "#64748b", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {order.documentName}
+                </div>
               </div>
             </div>
 
             {order.documentPath && (
-              <div style={{ marginTop: "16px", textAlign: "center" }}>
+              <div style={{ marginTop: "14px", textAlign: "center" }}>
                 <a
                   href={order.documentPath}
                   target="_blank"
                   rel="noreferrer"
                   style={{
-                    color: "#6d4aff",
-                    textDecoration: "none",
-                    fontWeight: 600,
                     fontSize: "13px",
+                    fontWeight: 600,
+                    color: "#2563eb",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
                   }}
                 >
-                  📥 View / Download Uploaded Document ({order.documentSize || "Ready"})
+                  <IconDownload size={14} />
+                  <span>Download / Preview Uploaded File</span>
                 </a>
               </div>
             )}
 
-            <div className="qr-section">
-              <div className="qr-wrapper">
-                <QRCodeSVG value={qrValue} size={180} level="M" />
+            {/* QR Code Pass */}
+            <div className="ticket-qr">
+              <div
+                style={{
+                  background: "white",
+                  padding: "16px",
+                  borderRadius: "14px",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "var(--shadow-sm)",
+                  display: "inline-block",
+                }}
+              >
+                <QRCodeSVG value={qrValue} size={160} level="M" />
               </div>
-
-              <h3>Your Counter Pickup QR Code</h3>
-              <p>
-                Show this QR code at the shop counter. The operator will scan or enter your ID to hand over your order.
+              <p style={{ fontSize: "13px", color: "#64748b", marginTop: "12px" }}>
+                Present this QR code at the counter for contactless order handoff.
               </p>
             </div>
 
-            <div className="success-actions">
-              <Link to="/bookings" className="continue-button">
-                📋 View All My Bookings
+            {/* Actions */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+              <Link to="/bookings" className="btn btn-primary" style={{ flex: 1, justifyContent: "center" }}>
+                <span>View All My Bookings</span>
+                <IconArrowRight size={15} />
               </Link>
-              <Link to="/" className="home-button">
+              <Link to="/" className="btn btn-secondary" style={{ flex: 1, justifyContent: "center" }}>
                 Back to Home
               </Link>
             </div>
           </div>
-        </section>
+        </div>
       </main>
     </div>
   );
